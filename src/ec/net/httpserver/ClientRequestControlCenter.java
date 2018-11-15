@@ -29,12 +29,23 @@ public class ClientRequestControlCenter extends QueneDataController{
 		boolean isClsServiceHandleDone = false;
 		if(clsServiceEngine != null) {
 			if(clsServiceEngine.isClassServiceRequest(clientRequest.QueryURI())){
-				try {
-					clsServiceEngine.callClassService(clientRequest);
-					isClsServiceHandleDone = true;
-				} catch(Exception e){
-					exportExceptionText(e);
-					clientRequest.response404NotFound();
+				
+				if(clsServiceEngine.isEcTableRenderType(clientRequest.QueryURI()) == null){
+					try {
+						clsServiceEngine.callClassService(clientRequest);
+						isClsServiceHandleDone = true;
+					} catch(Exception e){
+						exportExceptionText(e);
+						clientRequest.response404NotFound();
+					}
+				} else {
+					try {
+						clsServiceEngine.callEcTableRenderClassService(clientRequest);
+						isClsServiceHandleDone = true;
+					} catch(Exception e){
+						exportExceptionText(e);
+						clientRequest.response404NotFound();
+					}
 				}
 			}
 		}

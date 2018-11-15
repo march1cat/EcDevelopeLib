@@ -36,8 +36,10 @@ public abstract class ApplicationConfig extends Basis{
 				if(DeveloperMode.isON()) log("Start Read Config File["+ConfigFile + ".conf]",Module.EC_LIB);
 				Map<String,String> config = loadConfig();
 				setNotConifParameterDefaultValue();
-				if(DeveloperMode.isON()) showAllConfiguration();
-				return fillOtherConfigParameter(config);
+				boolean isDone = fillOtherConfigParameter(config);
+				if(isDone) isDone = finallyOnIni();
+				if(DeveloperMode.isON() && isDone) showAllConfiguration();
+				return isDone;
 			} else {
 				log("Config File Not Exist,Auto Generate it!!,File Uri = " + ConfigFile + ".conf",Module.EC_LIB);
 				List<Field> notConfigParameters = null;
@@ -147,6 +149,11 @@ public abstract class ApplicationConfig extends Basis{
 	}
 	
 	protected boolean fillOtherConfigParameter(Map<String,String> config){
+		//Wait to be Override
+		return true;
+	}
+	
+	protected boolean finallyOnIni(){
 		//Wait to be Override
 		return true;
 	}

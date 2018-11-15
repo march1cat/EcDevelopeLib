@@ -9,6 +9,7 @@ import java.util.Map;
 
 import ec.file.EcDirector;
 import ec.file.FileManager;
+import ec.net.httpserver.ecrtable.EcRenderTable;
 import ec.net.socketserver.NetConnectionServant;
 import ec.net.socketserver.ServerService;
 import ec.system.DeveloperMode;
@@ -22,6 +23,7 @@ public abstract class EcHttpServer extends ServerService{
 	private ClassServiceEngine clsServiceEngine = null;
 	private String faviconUri = null;
 	private EcDirector webResourceDirectory = null;
+	private List<EcRenderTable> ecRTables = null;
 	private SessionController sessionController = null;
 	private List<String> allowAccessIPs = null;
 	private String indexFileName = "index.html";
@@ -105,6 +107,22 @@ public abstract class EcHttpServer extends ServerService{
 	
 	public void embedClassServiceEngine(ClassServiceEngine engine){
 		clsServiceEngine = engine;
+	}
+	
+	public void mountEcTableRenderDefinitions(EcDirector ecDir){
+		List<String> filens = ecDir.listFileInUri();
+		if(isListWithContent(filens)){
+			ecRTables = new ArrayList<>();
+			for(String filen : filens){
+				EcRenderTable t = new EcRenderTable(filen);
+				if(t.ini()){
+					log("Mount EcTable Render Def File Success, File = " + filen + ",BindClass = " + t.getBindingClass());
+					ecRTables.add(t);
+				} else {
+					log("Mount EcTable Render Def File Fail, File = " + filen);
+				}
+			}
+		}
 	}
 	
 	private boolean checkIPAccess(String reqIP){
@@ -218,7 +236,10 @@ public abstract class EcHttpServer extends ServerService{
 		return clsServiceEngine;
 	}
 
-	
+	public List<EcRenderTable> getEcRTables() {
+		return ecRTables;
+	}
+
 	
 	
 }

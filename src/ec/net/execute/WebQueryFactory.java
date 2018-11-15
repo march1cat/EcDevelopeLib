@@ -18,8 +18,6 @@ public class WebQueryFactory extends Basis{
 		CONNECTION_REFUSED,CONNECTION_FAIL,HOST_NOT_FOUND
 	}
 	
-	
-	
 	public static String Data_encode = "UTF-8";
 	
 	protected URL url = null;
@@ -38,7 +36,7 @@ public class WebQueryFactory extends Basis{
 	public String queryWeb(String postData) {
 		if (url != null) {
 			try {
-				Write(postData);
+				if(postData != null) Write(postData);
 				return Read();
 			} catch(Exception e){
 				if(e.getMessage().toUpperCase().indexOf("Connection".toUpperCase()) >= 0 &&

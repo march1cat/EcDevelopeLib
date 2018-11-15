@@ -49,6 +49,26 @@ public class ApacheImageDownloadFactory extends ImageDownloadFactory{
         }
 	}
 	
+	public void saveWebImageVisSSL(String webHost,String imgUri,String saveUri) throws ClientProtocolException, IOException {
+		String auditImgUri = imgUri.startsWith("/") ? imgUri : "/" + imgUri;
+		HttpClient client = new DefaultHttpClient();
+		HttpGet get = new HttpGet(webHost + auditImgUri);
+		HttpResponse response = client.execute(get);
+		InputStream input = null;
+        OutputStream output = null;
+        byte[] buffer = new byte[bufferSize];
+        try {
+            input = response.getEntity().getContent();
+            output = new FileOutputStream(saveUri);
+            for (int length; (length = input.read(buffer)) > 0;) {
+                output.write(buffer, 0, length);
+            }
+        } finally {
+            if (output != null) try { output.close(); } catch (IOException logOrIgnore) {}
+            if (input != null) try { input.close(); } catch (IOException logOrIgnore) {}
+        }
+	}
+	
 	
 	
 	

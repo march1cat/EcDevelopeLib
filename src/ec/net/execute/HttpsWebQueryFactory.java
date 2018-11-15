@@ -16,7 +16,7 @@ public class HttpsWebQueryFactory extends WebQueryFactory {
 			super.urlCon = (HttpsURLConnection) url.openConnection(); 
 			((HttpsURLConnection) urlCon).setSSLSocketFactory(SSlCertificate.getSSLFactory());
 		} catch (Exception e) {
-			e.printStackTrace();
+			this.exportExceptionText(e);
 		}
 	}
 }
