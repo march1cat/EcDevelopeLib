@@ -20,10 +20,12 @@ public class EcDirector extends Basis {
 	}
 	
 	public List<String> listFile(){
-		return FileManager.getFolderDocumentList(uri);
+		if(!isDirectory()) return null;
+		else return FileManager.getFolderDocumentList(uri);
 	}
 	
 	public List<String> listFileInUri(){
+		if(!isDirectory()) return null;
 		List<String> list = FileManager.getFolderDocumentList(uri);
 		List<String> uriList = new ArrayList<>();
 		if(!list.isEmpty()){

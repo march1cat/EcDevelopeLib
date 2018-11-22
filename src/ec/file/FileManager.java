@@ -121,6 +121,16 @@ public class FileManager {
 	
 	//==================================================
 	//CopyFile
+	public static void copyDiectory(EcDirector sourceDir,EcDirector saveToDir) throws IOException{
+		if(sourceDir.isDirectory() && saveToDir.isDirectory()) {
+			List<String> ls = sourceDir.listFile();
+			if(ls != null && !ls.isEmpty())
+				for(String s : ls){
+					copyFile(sourceDir.Uri() + s,saveToDir.Uri() + s);
+				}
+		}
+	}
+	
 	public static void copyFile(String srcFileName,String trgFileName) throws IOException{
 		File srcFile =new File(srcFileName);
         File trgFile =new File(trgFileName);

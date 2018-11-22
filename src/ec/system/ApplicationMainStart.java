@@ -90,7 +90,7 @@ public abstract class ApplicationMainStart extends Basis{
 				String[] kk = arg.substring(1).split("=");
 				if(kk.length >= 2) {
 					if(startingParameters == null) startingParameters = new HashMap<>();
-					startingParameters.put(kk[0].toLowerCase(), kk[1]);
+					startingParameters.put(kk[0], kk[1]);
 				}
 			} else {
 				if(compareValue(arg, "-h") || compareValue(arg, "-help")) {
