@@ -23,6 +23,8 @@ public class WebQueryFactory extends Basis{
 	protected URL url = null;
 	private InputStream is;
 	protected HttpURLConnection urlCon;
+	
+	private String cookieValue = null;
 
 	public void setHost(String host) {
 		try {
@@ -36,6 +38,9 @@ public class WebQueryFactory extends Basis{
 	public String queryWeb(String postData) {
 		if (url != null) {
 			try {
+				if(cookieValue != null) {
+					setHeaderValue("Cookie", cookieValue);
+				}
 				if(postData != null) Write(postData);
 				return Read();
 			} catch(Exception e){
@@ -192,17 +197,26 @@ public class WebQueryFactory extends Basis{
 			to_file.close();
 		} catch (Exception e) {
 			try {
-				System.err.println("找不到網頁 建立空檔案 " + fileName);
 				OutputStream to_file = new FileOutputStream(fileName);
 				to_file.flush();
 				to_file.close();
 			} catch (Exception ex) {
-				// TODO: handle exception
+				ex.printStackTrace();
 			}
 
 		}
 	}
 	
+	
+	
+	public String getCookie() {
+		return cookieValue;
+	}
+
+	public void setCookie(String cookieValue) {
+		this.cookieValue = cookieValue;
+	}
+
 	public void setHeaderValue(String headerName,String headerValue){
 		urlCon.setRequestProperty(headerName, headerValue);
 	}

@@ -16,6 +16,10 @@ import ec.system.DeveloperMode;
 
 public abstract class EcHttpServer extends ServerService{
 
+	
+	public static final String TEMPLATE_TAG = "<:content/>";
+	
+	
 	private Map<NetConnectionServant,HttpClientRequest> clientMp = null;
 	private Map<String,String> htmlCach = null;
 	private boolean useCach = true;
@@ -27,6 +31,7 @@ public abstract class EcHttpServer extends ServerService{
 	private SessionController sessionController = null;
 	private List<String> allowAccessIPs = null;
 	private String indexFileName = "index.html";
+	private String webTemplate = null;
 	
 	public EcHttpServer(int servicePort, String serviceName) {
 		super(servicePort, serviceName);
@@ -93,6 +98,9 @@ public abstract class EcHttpServer extends ServerService{
 			File f = new File(htmlFileUri);
 			if(!f.exists()) return null;
 			String htmlText = FileManager.ReadTextInSpCode(htmlFileUri,"UTF-8",1024);
+			if((htmlFileUri.endsWith("html") || htmlFileUri.endsWith("htm")) && webTemplate != null) {
+				htmlText = webTemplate.replace(TEMPLATE_TAG, htmlText);
+			}
 			htmlCach.put(htmlFileUri, htmlText);
 			return htmlText;
 		} else {
@@ -238,6 +246,19 @@ public abstract class EcHttpServer extends ServerService{
 
 	public List<EcRenderTable> getEcRTables() {
 		return ecRTables;
+	}
+
+	public void setWebTemplate(String webTemplateFileUri) {
+		File f = new File(webTemplateFileUri);
+		if(f.exists() && !f.isDirectory()) {
+			String htmlText = FileManager.ReadTextInSpCode(webTemplateFileUri,"UTF-8",1024);
+			if(htmlText.indexOf(TEMPLATE_TAG) >= 0) {
+				this.webTemplate = htmlText;
+			} else {
+				this.except("Bind Web Template Fail, Key Tag["+TEMPLATE_TAG+"] not found!!");
+			}
+		}
+		
 	}
 
 	

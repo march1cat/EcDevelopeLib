@@ -13,7 +13,7 @@ public class HttpsDownloadFile extends HttpsWebQueryFactory{
 		this.setHost(url);
 		this.saveTo = saveTo;
 		String data = queryWeb(null);
-		return this.compareValue("OK", data);
+		return compareValue("OK", data);
 	}
 	
 	@Override
