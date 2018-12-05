@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,6 +119,13 @@ public class FileManager {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void writeByteToFile(String filename,byte[] bytes,boolean isAppend) throws IOException{
+		File f = new File(filename);
+		if(!f.exists()) f.createNewFile();
+		if(isAppend) Files.write(f.toPath(), bytes, StandardOpenOption.APPEND);
+		else Files.write(f.toPath(), bytes);
 	}
 	
 	//==================================================
