@@ -24,6 +24,13 @@ public class EcDirector extends Basis {
 		else return FileManager.getFolderDocumentList(uri);
 	}
 	
+	public int containFileAmount(){
+		if(!isDirectory()) return -1;
+		else {
+			return FileManager.getFolderDocumentList(uri).size();
+		}
+	}
+	
 	public List<String> listFileInUri(){
 		if(!isDirectory()) return null;
 		List<String> list = FileManager.getFolderDocumentList(uri);
