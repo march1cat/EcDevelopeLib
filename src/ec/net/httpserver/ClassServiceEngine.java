@@ -31,9 +31,11 @@ public class ClassServiceEngine extends Basis{
 	public EcRenderTable isEcTableRenderType(String queryUri){
 		String str = queryUri;
 		if(str.startsWith("/")) str = str.substring(1);
-		for(EcRenderTable et : httpServer.getEcRTables()){
-			if(et.getDefinitionFileUri().toUpperCase().endsWith(str.toUpperCase())){
-				return et;
+		if(this.isListWithContent(httpServer.getEcRTables())){
+			for(EcRenderTable et : httpServer.getEcRTables()){
+				if(et.getDefinitionFileUri().toUpperCase().endsWith(str.toUpperCase())){
+					return et;
+				}
 			}
 		}
 		return null;
