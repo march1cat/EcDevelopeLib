@@ -91,6 +91,21 @@ public abstract class Basis {
 		}
 	}
 	
+	protected boolean compareValueIn(String value,String[] values){
+		if(value == null || values == null){
+			return false;
+		} else {
+			boolean isMatch = false;
+			for(String v : values){
+				if(compareValue(value,v)) {
+					isMatch = true;
+					break;
+				}
+			}
+			return isMatch;
+		}
+	}
+	
 	
 	protected String getNotEmptyValue(Object data,String nvsl){
 		if(data == null) return nvsl;

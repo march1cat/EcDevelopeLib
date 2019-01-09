@@ -17,7 +17,7 @@ import ec.xpath.XPathManager;
 public class EcRenderTable extends Basis implements Cloneable {
 
 	public enum ColumnInfo {
-		ID, TYPE, ALIAS
+		ID, TYPE, ALIAS, UPDATE
 	}
 
 	public enum ColumnQueryType {
@@ -27,11 +27,17 @@ public class EcRenderTable extends Basis implements Cloneable {
 	public enum QueryValueType {
 		TEXT, RANGE_START, RANGE_END
 	}
+	
+	public enum UpdateValueType {
+		VALUE
+	}
 
 	private String definitionFileUri = null;
 	private List<Map<Object, String>> columnInfos = null;
 	private List<Map<Object, String>> queryCriterions = null;
+	private List<Map<Object, String>> commitDatas = null;
 	private String bindingClass = null;
+	private boolean isAllowUpdate = false;
 
 	public EcRenderTable(String definitionFileUri) {
 		this.definitionFileUri = definitionFileUri.trim();
@@ -54,18 +60,28 @@ public class EcRenderTable extends Basis implements Cloneable {
 					String type = nd1item.getAttributes().getNamedItem("type") != null
 							? nd1item.getAttributes().getNamedItem("type").getNodeValue() : null;
 					String alias = nd1item.getTextContent();
-
+					boolean allowUpdate = nd1item.getAttributes().getNamedItem("update") != null
+							? compareValueIn(nd1item.getAttributes().getNamedItem("update").getNodeValue(), new String[]{"1","true"}) : false;
+							
 					if (id == null)
 						throw new Exception(
 								"Definition File[" + definitionFileUri + "] Setting Fail,Column ID can't be null!!");
+					
+					
+					//set column info to memory
 					colMp.put(ColumnInfo.ID, id);
 					if (type != null) {
 						colMp.put(ColumnInfo.TYPE, type.toUpperCase());
 					}
 					colMp.put(ColumnInfo.ALIAS, alias);
+					colMp.put(ColumnInfo.UPDATE, allowUpdate ? "1" : "0");
+					
+					
 					if (columnInfos == null)
 						columnInfos = new ArrayList<>();
 					columnInfos.add(colMp);
+					if(allowUpdate) 
+						isAllowUpdate = true;
 				}
 			}
 			if (true) {
@@ -76,7 +92,7 @@ public class EcRenderTable extends Basis implements Cloneable {
 					break;
 				}
 			}
-
+			
 			return true;
 		} catch (Exception e) {
 			this.exportExceptionText(e);
@@ -129,6 +145,35 @@ public class EcRenderTable extends Basis implements Cloneable {
 		} else
 			return true;
 	}
+	
+	public boolean parsingCommitUpdateParameters(HttpClientRequest request) {
+		if (request.getParameters() != null) {
+			try {
+				if (columnInfos == null) ini();
+
+				for (Map<Object, String> colMp : columnInfos) {
+					String commitValue = request.getParameters().get(colMp.get(ColumnInfo.ID));
+					if (commitValue != null) {
+						if (commitDatas == null)
+							commitDatas = new ArrayList<>();
+						
+						Map<Object, String> mp = new HashMap<>();
+						mp.put(ColumnInfo.ID, colMp.get(ColumnInfo.ID));
+						mp.put(UpdateValueType.VALUE, commitValue);
+						commitDatas.add(mp);
+					}
+				}
+				log("EcRender Table Client Commit Updates = " + (isListWithContent(commitDatas) ? commitDatas.toString() : null));
+				return true;
+			} catch (Exception e) {
+				this.exportExceptionText(e);
+				this.except("Parsing EcRenderTable Commit Updates Fail,Error = " + e.getMessage());
+				return false;
+			}
+		} else
+			return false;
+	}
+	
 
 	public List<Map<Object, String>> getColumnInfos() {
 		return columnInfos;
@@ -155,6 +200,18 @@ public class EcRenderTable extends Basis implements Cloneable {
 			for (Map<Object, String> mp : queryCriterions) {
 				if (compareValue(columnID, mp.get(ColumnInfo.ID))) {
 					return mp.get(QueryValueType.TEXT);
+				}
+			}
+			return null;
+		} else
+			return null;
+	}
+	
+	public String getCommiValue(String columnID) {
+		if (isListWithContent(commitDatas)) {
+			for (Map<Object, String> mp : commitDatas) {
+				if (compareValue(columnID, mp.get(ColumnInfo.ID))) {
+					return mp.get(UpdateValueType.VALUE);
 				}
 			}
 			return null;
@@ -192,6 +249,13 @@ public class EcRenderTable extends Basis implements Cloneable {
 
 	public String getBindingClass() {
 		return bindingClass;
+	}
+
+	
+	
+	
+	public boolean isAllowUpdate() {
+		return isAllowUpdate;
 	}
 
 	@Override

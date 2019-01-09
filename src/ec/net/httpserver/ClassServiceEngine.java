@@ -50,8 +50,8 @@ public class ClassServiceEngine extends Basis{
 		if(ect != null && ect.getBindingClass() != null) {
 			String method = "queryData";
 			if(clientRequest.getParameters() != null) {
-				if(compareValue("querySchema", clientRequest.getParameters().get("action")))
-				method = "querySchema";
+				if(compareValue("querySchema", clientRequest.getParameters().get("action"))) method = "querySchema";
+				if(compareValue("commitUpdate", clientRequest.getParameters().get("action"))) method = "commitUpdate";
 			}
 			Class c = getClass().getClassLoader().loadClass(ect.getBindingClass());
 			Constructor cc = c.getDeclaredConstructor(HttpClientRequest.class,EcHttpServer.class);
@@ -60,11 +60,19 @@ public class ClassServiceEngine extends Basis{
 			if(o instanceof TableViewHandler) {
 				TableViewHandler v = (TableViewHandler) o;
 				Method[] ms = c.getMethods();
-				if(compareValue("queryData", method)) {
+				if(compareValueIn(method, new String[]{"queryData","commitUpdate"} )) {
 					EcRenderTable r = (EcRenderTable) ect.clone();
 					v.setBindDefEcTable(r);
-					boolean isPassingParamterSuccess = r.parsingQueryCondition(clientRequest);
-					if(!isPassingParamterSuccess) method = "onParamResovleFail";
+					if(compareValue(method, "queryData")) {
+						boolean isPassingParamterSuccess = r.parsingQueryCondition(clientRequest);
+						if(!isPassingParamterSuccess) method = "onParamResovleFail";
+					} else if(compareValue(method, "commitUpdate")) {
+						boolean isPassingParamterSuccess = r.parsingCommitUpdateParameters(clientRequest);
+						if(!isPassingParamterSuccess) method = "onParamResovleFail";
+					} else {
+						method = "onOperationMethodNotDefined";
+					}
+					
 				} else {
 					v.setBindDefEcTable(ect);
 				}
