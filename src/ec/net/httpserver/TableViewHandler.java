@@ -11,6 +11,10 @@ import ec.system.DeveloperMode;
 
 public abstract class TableViewHandler extends ClassServiceHandler{
 
+	//Client Request Common Definition
+	public static final String REQ_ACTION_KEY = "action";
+	
+	//Response Common Definition
 	public static final String RES_RESULT_KEY = "result";
 	public static final String RES_RESULT_STATUS_SUCCESS = "ok";
 	public static final String RES_RESULT_STATUS_FAIL = "fail";
@@ -21,7 +25,15 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 	public static final String RES_DATA_STATUS_EMPTY = "empty";
 	
 	
+	//Allow Action Definition
+	public static final String METHOD_REFFER_QUERY_DATA = "queryData";
+	public static final String METHOD_REFFER_QUERY_SCHEMA = "querySchema";
+	public static final String METHOD_REFFER_COMMIT_UPDATE = "commitUpdate";
+	public static final String METHOD_REFFER_EXCEPT_METHOD_UNDEFINED = "onOperationMethodNotDefined";
+	public static final String METHOD_REFFER_EXCEPT_PARAMETER_PARSE_FAIL = "onParamResovleFail";
+	
 	private EcRenderTable bindDefEcTable = null;
+	private String viewAction = null;
 	
 	public TableViewHandler(HttpClientRequest request, EcHttpServer httpServer) {
 		super(request, httpServer);
@@ -121,7 +133,14 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 		this.repsoneFailOnException();
 	}
 	
-	
+	protected String getParameter(String ColumnId){
+		if(compareValue(viewAction, METHOD_REFFER_QUERY_DATA)){
+			String data = bindDefEcTable().isQueryConditionExist(ColumnId) ? bindDefEcTable().getQueryTextValue(ColumnId) : null;
+			return data;
+		} else if (compareValue(viewAction, METHOD_REFFER_COMMIT_UPDATE)){
+			return bindDefEcTable().getCommiValue(ColumnId);
+		} else return null;
+	}
 
 	public EcRenderTable bindDefEcTable() {
 		return bindDefEcTable;
@@ -131,6 +150,13 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 		this.bindDefEcTable = bindDefEcTable;
 	}
 	
+	
+	
+	public void setViewAction(String viewAction) {
+		this.viewAction = viewAction;
+	}
+
+
 	public abstract void queryData();
 
 }

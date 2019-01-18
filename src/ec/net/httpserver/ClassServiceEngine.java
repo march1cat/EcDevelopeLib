@@ -48,10 +48,12 @@ public class ClassServiceEngine extends Basis{
 	public void callEcTableRenderClassService(HttpClientRequest clientRequest) throws Exception{
 		EcRenderTable ect = isEcTableRenderType(clientRequest.QueryURI());
 		if(ect != null && ect.getBindingClass() != null) {
-			String method = "queryData";
+			String method = TableViewHandler.METHOD_REFFER_QUERY_DATA;
 			if(clientRequest.getParameters() != null) {
-				if(compareValue("querySchema", clientRequest.getParameters().get("action"))) method = "querySchema";
-				if(compareValue("commitUpdate", clientRequest.getParameters().get("action"))) method = "commitUpdate";
+				if(compareValue(TableViewHandler.METHOD_REFFER_QUERY_SCHEMA, clientRequest.getParameters().get(TableViewHandler.REQ_ACTION_KEY))) 
+					method = TableViewHandler.METHOD_REFFER_QUERY_SCHEMA;
+				if(compareValue(TableViewHandler.METHOD_REFFER_COMMIT_UPDATE, clientRequest.getParameters().get(TableViewHandler.REQ_ACTION_KEY))) 
+					method = TableViewHandler.METHOD_REFFER_COMMIT_UPDATE;
 			}
 			Class c = getClass().getClassLoader().loadClass(ect.getBindingClass());
 			Constructor cc = c.getDeclaredConstructor(HttpClientRequest.class,EcHttpServer.class);
@@ -59,18 +61,19 @@ public class ClassServiceEngine extends Basis{
 			
 			if(o instanceof TableViewHandler) {
 				TableViewHandler v = (TableViewHandler) o;
+				v.setViewAction(method);
 				Method[] ms = c.getMethods();
-				if(compareValueIn(method, new String[]{"queryData","commitUpdate"} )) {
+				if(compareValueIn(method, new String[]{TableViewHandler.METHOD_REFFER_QUERY_DATA,TableViewHandler.METHOD_REFFER_COMMIT_UPDATE} )) {
 					EcRenderTable r = (EcRenderTable) ect.clone();
 					v.setBindDefEcTable(r);
-					if(compareValue(method, "queryData")) {
+					if(compareValue(method, TableViewHandler.METHOD_REFFER_QUERY_DATA)) {
 						boolean isPassingParamterSuccess = r.parsingQueryCondition(clientRequest);
-						if(!isPassingParamterSuccess) method = "onParamResovleFail";
-					} else if(compareValue(method, "commitUpdate")) {
+						if(!isPassingParamterSuccess) method = TableViewHandler.METHOD_REFFER_EXCEPT_PARAMETER_PARSE_FAIL;
+					} else if(compareValue(method, TableViewHandler.METHOD_REFFER_COMMIT_UPDATE)) {
 						boolean isPassingParamterSuccess = r.parsingCommitUpdateParameters(clientRequest);
-						if(!isPassingParamterSuccess) method = "onParamResovleFail";
+						if(!isPassingParamterSuccess) method = TableViewHandler.METHOD_REFFER_EXCEPT_PARAMETER_PARSE_FAIL;
 					} else {
-						method = "onOperationMethodNotDefined";
+						method = TableViewHandler.METHOD_REFFER_EXCEPT_METHOD_UNDEFINED;
 					}
 					
 				} else {
