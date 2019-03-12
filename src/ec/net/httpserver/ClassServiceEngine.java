@@ -54,6 +54,8 @@ public class ClassServiceEngine extends Basis{
 					method = TableViewHandler.METHOD_REFFER_QUERY_SCHEMA;
 				if(compareValue(TableViewHandler.METHOD_REFFER_COMMIT_UPDATE, clientRequest.getParameters().get(TableViewHandler.REQ_ACTION_KEY))) 
 					method = TableViewHandler.METHOD_REFFER_COMMIT_UPDATE;
+				if(compareValue(TableViewHandler.METHOD_REFFER_COMMIT_DELETE, clientRequest.getParameters().get(TableViewHandler.REQ_ACTION_KEY))) 
+					method = TableViewHandler.METHOD_REFFER_COMMIT_DELETE;
 			}
 			Class c = getClass().getClassLoader().loadClass(ect.getBindingClass());
 			Constructor cc = c.getDeclaredConstructor(HttpClientRequest.class,EcHttpServer.class);
@@ -63,13 +65,20 @@ public class ClassServiceEngine extends Basis{
 				TableViewHandler v = (TableViewHandler) o;
 				v.setViewAction(method);
 				Method[] ms = c.getMethods();
-				if(compareValueIn(method, new String[]{TableViewHandler.METHOD_REFFER_QUERY_DATA,TableViewHandler.METHOD_REFFER_COMMIT_UPDATE} )) {
+				if(compareValueIn(method, new String[]{
+							TableViewHandler.METHOD_REFFER_QUERY_DATA,
+							TableViewHandler.METHOD_REFFER_COMMIT_UPDATE,
+							TableViewHandler.METHOD_REFFER_COMMIT_DELETE
+						} )) {
 					EcRenderTable r = (EcRenderTable) ect.clone();
 					v.setBindDefEcTable(r);
 					if(compareValue(method, TableViewHandler.METHOD_REFFER_QUERY_DATA)) {
 						boolean isPassingParamterSuccess = r.parsingQueryCondition(clientRequest);
 						if(!isPassingParamterSuccess) method = TableViewHandler.METHOD_REFFER_EXCEPT_PARAMETER_PARSE_FAIL;
 					} else if(compareValue(method, TableViewHandler.METHOD_REFFER_COMMIT_UPDATE)) {
+						boolean isPassingParamterSuccess = r.parsingCommitUpdateParameters(clientRequest);
+						if(!isPassingParamterSuccess) method = TableViewHandler.METHOD_REFFER_EXCEPT_PARAMETER_PARSE_FAIL;
+					} else if(compareValue(method, TableViewHandler.METHOD_REFFER_COMMIT_DELETE)) {
 						boolean isPassingParamterSuccess = r.parsingCommitUpdateParameters(clientRequest);
 						if(!isPassingParamterSuccess) method = TableViewHandler.METHOD_REFFER_EXCEPT_PARAMETER_PARSE_FAIL;
 					} else {
@@ -93,6 +102,7 @@ public class ClassServiceEngine extends Basis{
 		String str = clientRequest.QueryURI();
 		if(str.startsWith("/")) str = str.substring(1);
 		String method = str.substring(str.lastIndexOf(".") + 1);
+		if(method!=null)method = method.trim();
 		Class c = requestClass(clientRequest);
 		Constructor cc = c.getDeclaredConstructor(HttpClientRequest.class,EcHttpServer.class);
 		Object o = cc.newInstance(clientRequest,httpServer);

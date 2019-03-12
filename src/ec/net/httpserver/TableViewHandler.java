@@ -1,5 +1,7 @@
 package ec.net.httpserver;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +31,7 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 	public static final String METHOD_REFFER_QUERY_DATA = "queryData";
 	public static final String METHOD_REFFER_QUERY_SCHEMA = "querySchema";
 	public static final String METHOD_REFFER_COMMIT_UPDATE = "commitUpdate";
+	public static final String METHOD_REFFER_COMMIT_DELETE = "commitDelete";
 	public static final String METHOD_REFFER_EXCEPT_METHOD_UNDEFINED = "onOperationMethodNotDefined";
 	public static final String METHOD_REFFER_EXCEPT_PARAMETER_PARSE_FAIL = "onParamResovleFail";
 	
@@ -43,6 +46,7 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 	public void querySchema() {
 		Map<String,Object> extraData = new HashMap<>();
 		extraData.put("allowupdate", bindDefEcTable().isAllowUpdate() ? "true" : "false");
+		extraData.put("allowdelete", bindDefEcTable().isAllowDelete() ? "true" : "false");
 		this.responseSuccessWithQueryData( bindDefEcTable().getColumnInfos(),extraData);
 	}
 	
@@ -57,6 +61,11 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 		this.responseFailWithMessage("operation(commit update) not allow!!");
 	}
 	
+	public void commitDelete() {
+		//wait to override
+		this.responseFailWithMessage("operation(commit delete) not allow!!");
+	}
+	
 	protected void responseSuccess(){
 		this.response("{\""+RES_RESULT_KEY+"\":\""+RES_RESULT_STATUS_SUCCESS+"\"}");
 	}
@@ -64,6 +73,8 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 	protected void responseSuccessWithQueryData(List<Map<Object,String>> data){
 		JsonFactory resData = new JsonFactory();
 		try {
+			if(compareValue(viewAction, METHOD_REFFER_QUERY_DATA))  sortDataList(data);
+			
 			resData.setJSONVariable(RES_RESULT_KEY, RES_RESULT_STATUS_SUCCESS);
 			resData.setJSONVariable(RES_DATA_KEY, this.isListWithContent(data) ? data : RES_DATA_STATUS_EMPTY);
 			this.response(resData.encodeJSON());
@@ -79,6 +90,7 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 	protected void responseSuccessWithQueryData(List<Map<Object,String>> data,Map<String,Object> extraData){
 		JsonFactory resData = new JsonFactory();
 		try {
+			if(compareValue(viewAction, METHOD_REFFER_QUERY_DATA))  sortDataList(data);
 			resData.setJSONVariable(RES_RESULT_KEY, RES_RESULT_STATUS_SUCCESS);
 			resData.setJSONVariable(RES_DATA_KEY, this.isListWithContent(data) ? data : RES_DATA_STATUS_EMPTY);
 			Iterator<String> iter = extraData.keySet().iterator();
@@ -139,6 +151,8 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 			return data;
 		} else if (compareValue(viewAction, METHOD_REFFER_COMMIT_UPDATE)){
 			return bindDefEcTable().getCommiValue(ColumnId);
+		} else if (compareValue(viewAction, METHOD_REFFER_COMMIT_DELETE)){
+			return bindDefEcTable().getCommiValue(ColumnId);
 		} else return null;
 	}
 
@@ -154,6 +168,22 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 	
 	public void setViewAction(String viewAction) {
 		this.viewAction = viewAction;
+	}
+	
+	private void sortDataList(List<Map<Object,String>> datas){
+		if(this.isListWithContent(datas)) {
+			if(bindDefEcTable.getOrderByColumeID() != null){
+				Collections.sort(datas, new Comparator<Map<Object,String>>() {
+				    @Override
+				    public int compare(Map<Object,String> m1, Map<Object,String> m2) {
+				    	if(bindDefEcTable.getOrderByType() == EcRenderTable.OrderByType.DESC)
+				    		return m1.get(bindDefEcTable.getOrderByColumeID()).compareTo(m2.get(bindDefEcTable.getOrderByColumeID())) * -1;
+				    	else 
+				    		return m1.get(bindDefEcTable.getOrderByColumeID()).compareTo(m2.get(bindDefEcTable.getOrderByColumeID()));
+				    }
+				});
+			}
+		}
 	}
 
 

@@ -31,6 +31,11 @@ public class EcRenderTable extends Basis implements Cloneable {
 	public enum UpdateValueType {
 		VALUE
 	}
+	
+	public enum OrderByType {
+		ASC,DESC
+	}
+	
 
 	private String definitionFileUri = null;
 	private List<Map<Object, String>> columnInfos = null;
@@ -38,6 +43,10 @@ public class EcRenderTable extends Basis implements Cloneable {
 	private List<Map<Object, String>> commitDatas = null;
 	private String bindingClass = null;
 	private boolean isAllowUpdate = false;
+	private boolean isAllowDelete = false;
+	
+	private String orderByColumeID = null;
+	private Object orderByType = OrderByType.ASC;
 
 	public EcRenderTable(String definitionFileUri) {
 		this.definitionFileUri = definitionFileUri.trim();
@@ -68,6 +77,18 @@ public class EcRenderTable extends Basis implements Cloneable {
 								"Definition File[" + definitionFileUri + "] Setting Fail,Column ID can't be null!!");
 					
 					
+					
+					String sort = nd1item.getAttributes().getNamedItem("sort") != null
+							? nd1item.getAttributes().getNamedItem("sort").getNodeValue() : null;
+					if(sort != null) {
+						orderByColumeID = id;
+						if(compareValue(sort, "desc")) {
+							orderByType = OrderByType.DESC;
+						} else {
+							orderByType = OrderByType.ASC;
+						}
+					}
+							
 					//set column info to memory
 					colMp.put(ColumnInfo.ID, id);
 					if (type != null) {
@@ -92,12 +113,27 @@ public class EcRenderTable extends Basis implements Cloneable {
 					break;
 				}
 			}
-			
+			iniSetting(xpath);
 			return true;
 		} catch (Exception e) {
 			this.exportExceptionText(e);
 			this.except("Initial EcRenderTable For Web Fail,Error = " + e.getMessage());
 			return false;
+		}
+	}
+	
+	private void iniSetting(XPathManager xpath) throws Exception{
+		NodeList nd1 = xpath.XSearch("//Setting");
+		for (int i = 0; i < nd1.getLength(); i++) {
+			Node nd1item = nd1.item(i);
+			Object key = nd1item.getAttributes().getNamedItem("id");
+			if(key != null) {
+				String value = nd1item.getAttributes().getNamedItem("id").getNodeValue();
+				if(compareValue(value, "delete")) {
+					String v = nd1item.getTextContent();
+					if(compareValue(v, "1") || compareValue(v, "true")) this.isAllowDelete = true;
+				}
+			} 
 		}
 	}
 
@@ -242,6 +278,15 @@ public class EcRenderTable extends Basis implements Cloneable {
 		} else
 			return null;
 	}
+	
+	
+	public String getOrderByColumeID() {
+		return orderByColumeID;
+	}
+
+	public Object getOrderByType() {
+		return orderByType;
+	}
 
 	public String getDefinitionFileUri() {
 		return definitionFileUri;
@@ -251,9 +296,10 @@ public class EcRenderTable extends Basis implements Cloneable {
 		return bindingClass;
 	}
 
-	
-	
-	
+	public boolean isAllowDelete() {
+		return isAllowDelete;
+	}
+
 	public boolean isAllowUpdate() {
 		return isAllowUpdate;
 	}

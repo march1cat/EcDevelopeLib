@@ -19,6 +19,7 @@ public class WebQueryFactory extends Basis{
 	}
 	
 	public static String Data_encode = "UTF-8";
+	private String dataEncode = "UTF-8";
 	
 	protected URL url = null;
 	private InputStream is;
@@ -87,16 +88,16 @@ public class WebQueryFactory extends Basis{
 				byteAr[readCount++] = (byte) readCode;
 				if (readCount == 1024) {
 					strBuffer.append(new String(byteAr, 0, readCount,
-							WebQueryFactory.Data_encode));
+							dataEncode));
 					readCount = 0;
 				}
 			} while (readCode != -1);
 			strBuffer.append(new String(byteAr, 0, readCount,
-					WebQueryFactory.Data_encode));
+					dataEncode));
 		} catch (Exception e) {
 			throw e;
 		}
-		if (WebQueryFactory.Data_encode.equals("UTF-8")) {
+		if (dataEncode.equals("UTF-8")) {
 			return (strBuffer.toString().length() >= 1) ? strBuffer.toString()
 					.substring(0, strBuffer.toString().length() - 1)
 					: strBuffer.toString();
@@ -220,5 +221,12 @@ public class WebQueryFactory extends Basis{
 	public void setHeaderValue(String headerName,String headerValue){
 		urlCon.setRequestProperty(headerName, headerValue);
 	}
+
+	public void setDataEncode(String dataEncode) {
+		this.dataEncode = dataEncode;
+	}
+	
+	
+	
 
 }
