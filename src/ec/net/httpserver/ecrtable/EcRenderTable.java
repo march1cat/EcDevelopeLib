@@ -1,14 +1,19 @@
 package ec.net.httpserver.ecrtable;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+
+import ec.net.httpserver.EcHttpServer;
 import ec.net.httpserver.HttpClientRequest;
 import ec.system.Basis;
 import ec.system.DeveloperMode;
@@ -17,11 +22,11 @@ import ec.xpath.XPathManager;
 public class EcRenderTable extends Basis implements Cloneable {
 
 	public enum ColumnInfo {
-		ID, TYPE, ALIAS, UPDATE
+		ID, TYPE, ALIAS, UPDATE , OPTION
 	}
 
 	public enum ColumnQueryType {
-		TEXT, RANGE
+		TEXT, RANGE , SELECT
 	}
 
 	public enum QueryValueType {
@@ -47,6 +52,9 @@ public class EcRenderTable extends Basis implements Cloneable {
 	
 	private String orderByColumeID = null;
 	private Object orderByType = OrderByType.ASC;
+	
+	private List<Map<Object,String>> dymanicSelectCols = null;
+	private Map<String,String> dymanicOptionGeDefMp = null;
 
 	public EcRenderTable(String definitionFileUri) {
 		this.definitionFileUri = definitionFileUri.trim();
@@ -93,6 +101,30 @@ public class EcRenderTable extends Basis implements Cloneable {
 					colMp.put(ColumnInfo.ID, id);
 					if (type != null) {
 						colMp.put(ColumnInfo.TYPE, type.toUpperCase());
+						if(compareValue(type, "SELECT")) {
+							String option = nd1item.getAttributes().getNamedItem("option") != null
+									? nd1item.getAttributes().getNamedItem("option").getNodeValue() : null;
+							if(option != null) {
+								if(option.indexOf(",") >= 0) {
+									colMp.put(ColumnInfo.OPTION, option);
+								} else {
+									String selectOptionStr = loadOptionFromXMLOptionText(option);
+									if(selectOptionStr != null) {
+										//Check select option genereate method works or not
+										if(dymanicSelectCols == null){
+											dymanicSelectCols = new ArrayList<>();
+											dymanicOptionGeDefMp = new HashMap<>();
+										}
+										dymanicSelectCols.add(colMp);
+										dymanicOptionGeDefMp.put(colMp.get(ColumnInfo.ID), option);
+									} else {
+										colMp.put(ColumnInfo.OPTION, "OptionPrepareFail");
+									}
+								}
+							} else {
+								colMp.put(ColumnInfo.TYPE, "TEXT");
+							}
+						}
 					}
 					colMp.put(ColumnInfo.ALIAS, alias);
 					colMp.put(ColumnInfo.UPDATE, allowUpdate ? "1" : "0");
@@ -145,7 +177,8 @@ public class EcRenderTable extends Basis implements Cloneable {
 				for (Map<Object, String> colMp : columnInfos) {
 					if (colMp.get(ColumnInfo.TYPE) == null)
 						continue;
-					if (compareValue(colMp.get(ColumnInfo.TYPE), ColumnQueryType.TEXT.toString())) {
+					if (compareValue(colMp.get(ColumnInfo.TYPE), ColumnQueryType.TEXT.toString()) || 
+							compareValue(colMp.get(ColumnInfo.TYPE), ColumnQueryType.SELECT.toString())) {
 						String queryValue = request.getParameters().get(colMp.get(ColumnInfo.ID));
 						if (queryValue != null) {
 							if (queryCriterions == null)
@@ -212,6 +245,21 @@ public class EcRenderTable extends Basis implements Cloneable {
 	
 
 	public List<Map<Object, String>> getColumnInfos() {
+		if(dymanicSelectCols != null){
+			for(Map<Object,String> dymanicSelectCols : dymanicSelectCols){
+				String optionDef = dymanicOptionGeDefMp.get(dymanicSelectCols.get(ColumnInfo.ID));
+				if(optionDef != null) {
+					String selectOptionStr = loadOptionFromXMLOptionText(optionDef);
+					if(selectOptionStr != null) {
+						dymanicSelectCols.put(ColumnInfo.OPTION, selectOptionStr);
+					} else {
+						dymanicSelectCols.put(ColumnInfo.OPTION, "OptionPrepareFail");
+					}
+				} else {
+					dymanicSelectCols.put(ColumnInfo.OPTION, "OptionPrepareFail");
+				}
+			}
+		}
 		return columnInfos;
 	}
 
@@ -219,7 +267,8 @@ public class EcRenderTable extends Basis implements Cloneable {
 		if (isListWithContent(queryCriterions)) {
 			for (Map<Object, String> mp : queryCriterions) {
 				if (compareValue(columnID, mp.get(ColumnInfo.ID))) {
-					if (compareValue(mp.get(ColumnInfo.TYPE), ColumnQueryType.TEXT.toString())) {
+					if (compareValue(mp.get(ColumnInfo.TYPE), ColumnQueryType.TEXT.toString()) || 
+							compareValue(mp.get(ColumnInfo.TYPE), ColumnQueryType.SELECT.toString())) {
 						return mp.get(QueryValueType.TEXT) != null;
 					} else if (compareValue(mp.get(ColumnInfo.TYPE), ColumnQueryType.RANGE.toString())) {
 						return mp.get(QueryValueType.RANGE_START) != null && mp.get(QueryValueType.RANGE_END) != null;
@@ -302,6 +351,22 @@ public class EcRenderTable extends Basis implements Cloneable {
 
 	public boolean isAllowUpdate() {
 		return isAllowUpdate;
+	}
+	
+	private String loadOptionFromXMLOptionText(String option){
+		String className = option.substring(0, option.lastIndexOf("."));
+		String methodName = option.substring(option.lastIndexOf(".") + 1);
+		try {
+			Class c = getClass().getClassLoader().loadClass(className);
+			Constructor cc = c.getDeclaredConstructor();
+			Object o = cc.newInstance();
+			Method m = c.getDeclaredMethod(methodName);
+			Object k = m.invoke(o);
+			return k != null ? k.toString() : null;
+		} catch(Exception e){
+			this.exportExceptionText(e);
+			return null;
+		}
 	}
 
 	@Override

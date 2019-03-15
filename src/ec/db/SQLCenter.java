@@ -243,7 +243,12 @@ public abstract class SQLCenter extends Basis{
 		while (iter.hasNext()){
 			Object key = iter.next();
 			values[cnt++] = data.get(key);
-			whereClause += key.toString() + "=?";
+			if(data.get(key) != null && (isTextStartWith(data.get(key).toString(), "%") || isTextEndWith(data.get(key).toString(), "%"))){
+				whereClause += key.toString() + " like ?";
+			} else {
+				whereClause += key.toString() + " = ?";
+			}
+			
 			if(cnt < values.length) whereClause += " and ";
 		}
 		SQL += whereClause;
@@ -284,7 +289,12 @@ public abstract class SQLCenter extends Basis{
 		while (iter.hasNext()){
 			Object key = iter.next();
 			values[cnt++] = data.get(key);
-			whereClause += key.toString() + "=?";
+			if(data.get(key) != null && (isTextStartWith(data.get(key).toString(), "%") || isTextEndWith(data.get(key).toString(), "%"))){
+				whereClause += key.toString() + " like ?";
+			} else {
+				whereClause += key.toString() + "=?";
+			}
+			
 			if(cnt < values.length) whereClause += " and ";
 		}
 		SQL += whereClause;
@@ -314,7 +324,12 @@ public abstract class SQLCenter extends Basis{
 		while (iter.hasNext()){
 			Object key = iter.next();
 			values[cnt++] = data.get(key);
-			whereClause += key.toString() + "=?";
+			if(data.get(key) != null && (isTextStartWith(data.get(key).toString(), "%") || isTextEndWith(data.get(key).toString(), "%"))){
+				whereClause += key.toString() + " like ?";
+			} else  {
+				whereClause += key.toString() + "=?";
+			}
+			
 			if(cnt < values.length) whereClause += " and ";
 		}
 		SQL += whereClause;
@@ -403,7 +418,11 @@ public abstract class SQLCenter extends Basis{
 		while (iter.hasNext()){
 			Object key = iter.next();
 			values[cnt++] = data.get(key);
-			whereClause += key.toString() + "=?";
+			if(data.get(key) != null && (isTextStartWith(data.get(key).toString(), "%") || isTextEndWith(data.get(key).toString(), "%"))){
+				whereClause += key.toString() + " like ?";
+			} else {
+				whereClause += key.toString() + "=?";
+			}
 			if(cnt < values.length) whereClause += " and ";
 		}
 		SQL += whereClause;

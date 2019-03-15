@@ -171,15 +171,45 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 	}
 	
 	private void sortDataList(List<Map<Object,String>> datas){
+		
 		if(this.isListWithContent(datas)) {
 			if(bindDefEcTable.getOrderByColumeID() != null){
 				Collections.sort(datas, new Comparator<Map<Object,String>>() {
 				    @Override
 				    public int compare(Map<Object,String> m1, Map<Object,String> m2) {
-				    	if(bindDefEcTable.getOrderByType() == EcRenderTable.OrderByType.DESC)
-				    		return m1.get(bindDefEcTable.getOrderByColumeID()).compareTo(m2.get(bindDefEcTable.getOrderByColumeID())) * -1;
-				    	else 
-				    		return m1.get(bindDefEcTable.getOrderByColumeID()).compareTo(m2.get(bindDefEcTable.getOrderByColumeID()));
+				    	String v1 = null;
+				    	if(true){
+				    		Iterator<Object> iter = m1.keySet().iterator();
+					    	while(iter.hasNext()){
+					    		Object key = iter.next();
+					    		if(bindDefEcTable.getOrderByColumeID().equalsIgnoreCase(key.toString())){
+					    			v1 = m1.get(key);
+					    			break;
+					    		}
+					    	}
+				    	}
+				    	
+				    	String v2 = null;
+				    	if(true){
+				    		Iterator<Object> iter = m2.keySet().iterator();
+					    	while(iter.hasNext()){
+					    		Object key = iter.next();
+					    		if(bindDefEcTable.getOrderByColumeID().equalsIgnoreCase(key.toString())){
+					    			v2 = m2.get(key);
+					    			break;
+					    		}
+					    	}
+				    	}
+				    	if(v1 != null && v2 != null){
+				    		if(bindDefEcTable.getOrderByType() == EcRenderTable.OrderByType.DESC)
+					    		return v1.compareTo(v2) * -1;
+					    	else 
+					    		return v1.compareTo(v2);
+				    	} else {
+				    		return 0;
+				    	}
+				    	
+				    	
 				    }
 				});
 			}

@@ -122,6 +122,7 @@ public abstract class EcHttpServer extends ServerService{
 		if(isListWithContent(filens)){
 			ecRTables = new ArrayList<>();
 			for(String filen : filens){
+				if(this.isTextEndWith(filen, "Sample.xml")) continue;
 				EcRenderTable t = new EcRenderTable(filen);
 				if(t.ini()){
 					log("Mount EcTable Render Def File Success, File = " + filen + ",BindClass = " + t.getBindingClass());
