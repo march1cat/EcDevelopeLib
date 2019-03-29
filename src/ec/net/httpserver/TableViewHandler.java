@@ -30,6 +30,8 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 	//Allow Action Definition
 	public static final String METHOD_REFFER_QUERY_DATA = "queryData";
 	public static final String METHOD_REFFER_QUERY_SCHEMA = "querySchema";
+	public static final String METHOD_REFFER_QUERY_FORM_DEF = "queryFormDefinition";
+	public static final String METHOD_REFFER_COMMIT_INSERT = "commitInsert";
 	public static final String METHOD_REFFER_COMMIT_UPDATE = "commitUpdate";
 	public static final String METHOD_REFFER_COMMIT_DELETE = "commitDelete";
 	public static final String METHOD_REFFER_EXCEPT_METHOD_UNDEFINED = "onOperationMethodNotDefined";
@@ -50,11 +52,18 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 		this.responseSuccessWithQueryData( bindDefEcTable().getColumnInfos(),extraData);
 	}
 	
+	public void queryFormDefinition(){
+		this.responseSuccessWithQueryData( bindDefEcTable().getColumnInfos());
+	}
+	
 	public void onOperationMethodNotDefined(){
 		//wait to override
 		responseFailWithMessage("not defined ec table method");
 	}
-	
+	public void commitInsert() {
+		//wait to override
+		this.responseFailWithMessage("operation(commit insert) not allow!!");
+	}
 
 	public void commitUpdate() {
 		//wait to override
@@ -65,6 +74,9 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 		//wait to override
 		this.responseFailWithMessage("operation(commit delete) not allow!!");
 	}
+	
+	
+	
 	
 	protected void responseSuccess(){
 		this.response("{\""+RES_RESULT_KEY+"\":\""+RES_RESULT_STATUS_SUCCESS+"\"}");
@@ -149,6 +161,8 @@ public abstract class TableViewHandler extends ClassServiceHandler{
 		if(compareValue(viewAction, METHOD_REFFER_QUERY_DATA)){
 			String data = bindDefEcTable().isQueryConditionExist(ColumnId) ? bindDefEcTable().getQueryTextValue(ColumnId) : null;
 			return data;
+		} else if (compareValue(viewAction, METHOD_REFFER_COMMIT_INSERT)){
+			return bindDefEcTable().getCommiValue(ColumnId);
 		} else if (compareValue(viewAction, METHOD_REFFER_COMMIT_UPDATE)){
 			return bindDefEcTable().getCommiValue(ColumnId);
 		} else if (compareValue(viewAction, METHOD_REFFER_COMMIT_DELETE)){

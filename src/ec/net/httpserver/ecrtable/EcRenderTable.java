@@ -22,7 +22,11 @@ import ec.xpath.XPathManager;
 public class EcRenderTable extends Basis implements Cloneable {
 
 	public enum ColumnInfo {
-		ID, TYPE, ALIAS, UPDATE , OPTION
+		ID, TYPE, ALIAS, UPDATE , OPTION , NOSHOW
+	}
+	
+	public enum FormInputDefintion {
+		READ_ONLY
 	}
 
 	public enum ColumnQueryType {
@@ -79,12 +83,11 @@ public class EcRenderTable extends Basis implements Cloneable {
 					String alias = nd1item.getTextContent();
 					boolean allowUpdate = nd1item.getAttributes().getNamedItem("update") != null
 							? compareValueIn(nd1item.getAttributes().getNamedItem("update").getNodeValue(), new String[]{"1","true"}) : false;
-							
+					boolean isNoShow = nd1item.getAttributes().getNamedItem("show") != null
+							? compareValueIn(nd1item.getAttributes().getNamedItem("show").getNodeValue(), new String[]{"0","false"}) : false;
 					if (id == null)
 						throw new Exception(
 								"Definition File[" + definitionFileUri + "] Setting Fail,Column ID can't be null!!");
-					
-					
 					
 					String sort = nd1item.getAttributes().getNamedItem("sort") != null
 							? nd1item.getAttributes().getNamedItem("sort").getNodeValue() : null;
@@ -105,9 +108,7 @@ public class EcRenderTable extends Basis implements Cloneable {
 							String option = nd1item.getAttributes().getNamedItem("option") != null
 									? nd1item.getAttributes().getNamedItem("option").getNodeValue() : null;
 							if(option != null) {
-								if(option.indexOf(",") >= 0) {
-									colMp.put(ColumnInfo.OPTION, option);
-								} else {
+								if(option.indexOf(".") >= 0) {
 									String selectOptionStr = loadOptionFromXMLOptionText(option);
 									if(selectOptionStr != null) {
 										//Check select option genereate method works or not
@@ -120,21 +121,26 @@ public class EcRenderTable extends Basis implements Cloneable {
 									} else {
 										colMp.put(ColumnInfo.OPTION, "OptionPrepareFail");
 									}
+								} else {
+									colMp.put(ColumnInfo.OPTION, option);
 								}
 							} else {
 								colMp.put(ColumnInfo.TYPE, "TEXT");
 							}
 						}
 					}
+					if(isNoShow) colMp.put(ColumnInfo.NOSHOW, "1");
 					colMp.put(ColumnInfo.ALIAS, alias);
 					colMp.put(ColumnInfo.UPDATE, allowUpdate ? "1" : "0");
 					
+					iniFormExtraDefinition(xpath,colMp);
 					
 					if (columnInfos == null)
 						columnInfos = new ArrayList<>();
 					columnInfos.add(colMp);
 					if(allowUpdate) 
 						isAllowUpdate = true;
+					
 				}
 			}
 			if (true) {
@@ -168,6 +174,17 @@ public class EcRenderTable extends Basis implements Cloneable {
 			} 
 		}
 	}
+	
+	
+	private void iniFormExtraDefinition(XPathManager xpath,Map<Object, String> colMp) throws Exception{
+		NodeList nd1 = xpath.XSearch("//Input[@refer='" + colMp.get(ColumnInfo.ID) + "']");
+		if(nd1.getLength() > 0) {
+			Node nd1item = nd1.item(0);
+			boolean isReadOnly = nd1item.getAttributes().getNamedItem("readonly") != null
+					? compareValueIn(nd1item.getAttributes().getNamedItem("readonly").getNodeValue(), new String[]{"1","true"}) : false;
+			if(isReadOnly)  colMp.put(FormInputDefintion.READ_ONLY, "1");
+		}
+	}
 
 	public boolean parsingQueryCondition(HttpClientRequest request) {
 		if (request.getParameters() != null) {
@@ -192,7 +209,7 @@ public class EcRenderTable extends Basis implements Cloneable {
 					} else if (compareValue(colMp.get(ColumnInfo.TYPE), ColumnQueryType.RANGE.toString())) {
 						String queryStartValue = request.getParameters().get(colMp.get(ColumnInfo.ID) + "@RANGE_START");
 						String queryEndValue = request.getParameters().get(colMp.get(ColumnInfo.ID) + "@RANGE_END");
-						if (queryStartValue != null && queryEndValue != null) {
+						if (queryStartValue != null || queryEndValue != null) {
 							if (queryCriterions == null)
 								queryCriterions = new ArrayList<>();
 							Map<Object, String> mp = new HashMap<>();

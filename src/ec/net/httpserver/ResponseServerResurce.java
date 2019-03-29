@@ -19,5 +19,7 @@ public class ResponseServerResurce extends Response{
 		fis.read(contBytAr);
 		this.setHttpHeader(Header.CONTENT_LENGTH, String.valueOf(contBytAr.length));
 	}
+	
+	
 
 }

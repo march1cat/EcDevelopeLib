@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import ec.net.socketserver.NetConnectionServant;
@@ -14,6 +15,8 @@ public class HttpClientServant extends NetConnectionServant{
 	
 	private boolean OnReadLineMode = true;
 	private int ContentSize = 0;
+	private boolean isStepParsingRequest = true;
+	private InputStream inputIs = null;
 	
 	
 	public HttpClientServant(ServerService server, Socket socket, String serviceEncode) {
@@ -22,9 +25,10 @@ public class HttpClientServant extends NetConnectionServant{
 	
 	@Override
 	protected void receivingData(InputStream inputIs) throws Exception {
+		if (this.inputIs == null) this.inputIs = inputIs;
 		BufferedReader in = new BufferedReader( new InputStreamReader(inputIs,serviceEncode));
 		String inputLine = null;
-		while(true) {
+		while(isStepParsingRequest) {
 			if(OnReadLineMode) inputLine = in.readLine();
 			else {
 				char[] k = new char[ContentSize];
@@ -40,6 +44,11 @@ public class HttpClientServant extends NetConnectionServant{
 			}
 		}
 		//throw new Exception("Http Client Connection Close");
+	}
+	
+	public void resumeReceivingData() throws Exception {
+		this.switchOnStepParingRequest();
+		this.receivingData(inputIs);
 	}
 	
 	public void closeClientConnection(){
@@ -67,7 +76,26 @@ public class HttpClientServant extends NetConnectionServant{
 			this.exportExceptionText(e);
 		}
 	}
+	
+	protected OutputStream getResponseOutputStream(){
+		try {
+			if(socket != null){
+				return socket.getOutputStream();
+			}
+		} catch (IOException e) {
+			this.exportExceptionText(e);
+		}
+		return null;
+	}
+	
+	public void closeStepParingRequest(){
+		isStepParsingRequest = false;
+	}
 
+	public void switchOnStepParingRequest(){
+		isStepParsingRequest = true;
+	}
+	
 	@Override
 	protected void autoStartProcessService() {}
 	public void triggerRunning(){

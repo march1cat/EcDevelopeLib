@@ -67,8 +67,10 @@ public abstract class EcHttpServer extends ServerService{
 					if(cachRequest.isFinishListen()) {
 						clientMp.remove(servant);
 						log("Http Server Receive Request, Query Uri = " + cachRequest.QueryURI(),Module.MIDDLE_WARE);
+						((HttpClientServant)servant).closeStepParingRequest();
 						if(checkIPAccess(servant.getClientIP()) && isAccessCheckOK(cachRequest)) onClientRequest(cachRequest);
 						else isAccessCheckFail(cachRequest);
+						
 					}
 				} catch(Exception e){
 					exportExceptionText(e);
@@ -191,6 +193,9 @@ public abstract class EcHttpServer extends ServerService{
 	
 	public void setWebResource(EcDirector webResourceDirectory){
 		this.webResourceDirectory = webResourceDirectory;
+	}
+	public EcDirector getWebResource(){
+		return this.webResourceDirectory;
 	}
 	
 	private void responseWebResource(ClientGetRequest req){

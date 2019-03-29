@@ -54,8 +54,12 @@ public class ClassServiceEngine extends Basis{
 					method = TableViewHandler.METHOD_REFFER_QUERY_SCHEMA;
 				if(compareValue(TableViewHandler.METHOD_REFFER_COMMIT_UPDATE, clientRequest.getParameters().get(TableViewHandler.REQ_ACTION_KEY))) 
 					method = TableViewHandler.METHOD_REFFER_COMMIT_UPDATE;
+				if(compareValue(TableViewHandler.METHOD_REFFER_COMMIT_INSERT, clientRequest.getParameters().get(TableViewHandler.REQ_ACTION_KEY))) 
+					method = TableViewHandler.METHOD_REFFER_COMMIT_INSERT;
 				if(compareValue(TableViewHandler.METHOD_REFFER_COMMIT_DELETE, clientRequest.getParameters().get(TableViewHandler.REQ_ACTION_KEY))) 
 					method = TableViewHandler.METHOD_REFFER_COMMIT_DELETE;
+				if(compareValue(TableViewHandler.METHOD_REFFER_QUERY_FORM_DEF, clientRequest.getParameters().get(TableViewHandler.REQ_ACTION_KEY))) 
+					method = TableViewHandler.METHOD_REFFER_QUERY_FORM_DEF;
 			}
 			Class c = getClass().getClassLoader().loadClass(ect.getBindingClass());
 			Constructor cc = c.getDeclaredConstructor(HttpClientRequest.class,EcHttpServer.class);
@@ -67,6 +71,7 @@ public class ClassServiceEngine extends Basis{
 				Method[] ms = c.getMethods();
 				if(compareValueIn(method, new String[]{
 							TableViewHandler.METHOD_REFFER_QUERY_DATA,
+							TableViewHandler.METHOD_REFFER_COMMIT_INSERT,
 							TableViewHandler.METHOD_REFFER_COMMIT_UPDATE,
 							TableViewHandler.METHOD_REFFER_COMMIT_DELETE
 						} )) {
@@ -74,6 +79,9 @@ public class ClassServiceEngine extends Basis{
 					v.setBindDefEcTable(r);
 					if(compareValue(method, TableViewHandler.METHOD_REFFER_QUERY_DATA)) {
 						boolean isPassingParamterSuccess = r.parsingQueryCondition(clientRequest);
+						if(!isPassingParamterSuccess) method = TableViewHandler.METHOD_REFFER_EXCEPT_PARAMETER_PARSE_FAIL;
+					} else if(compareValue(method, TableViewHandler.METHOD_REFFER_COMMIT_INSERT)) {
+						boolean isPassingParamterSuccess = r.parsingCommitUpdateParameters(clientRequest);
 						if(!isPassingParamterSuccess) method = TableViewHandler.METHOD_REFFER_EXCEPT_PARAMETER_PARSE_FAIL;
 					} else if(compareValue(method, TableViewHandler.METHOD_REFFER_COMMIT_UPDATE)) {
 						boolean isPassingParamterSuccess = r.parsingCommitUpdateParameters(clientRequest);

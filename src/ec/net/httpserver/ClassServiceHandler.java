@@ -32,4 +32,19 @@ public abstract class ClassServiceHandler extends Basis{
 	protected EcHttpServer httpServer(){
 		return httpServer;
 	}
+	
+	
+	protected void response404(){
+		ResponseNoResource res = new ResponseNoResource();
+		this.request().response(res);
+	}
+	
+	
+	
+	protected void responseRangeFile(String fpath) throws Exception{
+		ResponseServerBytesResource res = new ResponseServerBytesResource(fpath);
+		this.request().response(res);
+	}
+	
+	
 }

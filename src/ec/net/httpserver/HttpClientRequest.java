@@ -109,9 +109,18 @@ public abstract class HttpClientRequest extends Basis{
 				res.setHttpHeader("Set-Cookie", "JSESSIONID=" + session.getSessionID() + ";path=/;");
 				session.setClientSettled();
 			}
-			servant.response(res);
+			if(res instanceof ResponseServerBytesResource) responseRange((ResponseServerBytesResource)res);
+			else servant.response(res);
 		}
 	} 
+	
+	
+	private void responseRange(ResponseServerBytesResource res){
+		this.markAsyncJob();
+		ResourceRangeProvider provider = new ResourceRangeProvider(this, res);
+		provider.startRunner();
+		
+	}
 	
 	public void response404NotFound(){
 		if(servant != null){
@@ -142,7 +151,7 @@ public abstract class HttpClientRequest extends Basis{
 	}
 	
 	
-	protected HttpClientServant getClientServant(){
+	public HttpClientServant getClientServant(){
 		return servant;
 	}
 

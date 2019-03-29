@@ -55,6 +55,7 @@ public class ServerService extends Runner{
 			try {
 				log(serviceName + " is waiting to built connection at Port("+servicePort+")");
 				Socket socket = server.accept();
+				log(serviceName + " is conected  at Port("+servicePort+")");
 				NetConnectionServant servant = onGeneratingConnection(socket);
 				onCreateHttpServant(servant);
 			} catch (IOException e) {

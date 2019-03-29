@@ -14,6 +14,8 @@ public class Response extends Basis{
 	
 	private Map headerMp = null;
 	protected byte[] contBytAr = null;
+	private String httpResponseCode = "200";
+	private String httpResponseDesc = "OK";
 	
 	public Response(String content){
 		headerMp = new HashMap<>();
@@ -38,7 +40,7 @@ public class Response extends Basis{
 	}
 	
 	protected String iniHeader(){
-		return "HTTP/1.1 200 OK\r\n";
+		return "HTTP/1.1 " + httpResponseCode + " " + httpResponseDesc + "\r\n";
 	}
 	
 	public String getHeader(){
@@ -71,5 +73,11 @@ public class Response extends Basis{
 		System.arraycopy(end.getBytes(), 0, rv, getHeader().getBytes().length + contBytAr.length, end.getBytes().length);
 		return rv;
 	}
+	public void markResponsePartialContent() {
+		this.httpResponseCode = "206";
+		this.httpResponseDesc = "Partial Content";
+	}
+	
+	
 	
 }
