@@ -26,7 +26,7 @@ public class EcRenderTable extends Basis implements Cloneable {
 	}
 	
 	public enum FormInputDefintion {
-		READ_ONLY
+		READ_ONLY,FORM_ONLY,VIEW_ONLY
 	}
 
 	public enum ColumnQueryType {
@@ -183,6 +183,12 @@ public class EcRenderTable extends Basis implements Cloneable {
 			boolean isReadOnly = nd1item.getAttributes().getNamedItem("readonly") != null
 					? compareValueIn(nd1item.getAttributes().getNamedItem("readonly").getNodeValue(), new String[]{"1","true"}) : false;
 			if(isReadOnly)  colMp.put(FormInputDefintion.READ_ONLY, "1");
+			boolean isFormOnly = nd1item.getAttributes().getNamedItem("formonly") != null
+					? compareValueIn(nd1item.getAttributes().getNamedItem("formonly").getNodeValue(), new String[]{"1","true"}) : false;
+			if(isFormOnly)  colMp.put(FormInputDefintion.FORM_ONLY, "1");
+			boolean isViewOnly = nd1item.getAttributes().getNamedItem("viewonly") != null
+					? compareValueIn(nd1item.getAttributes().getNamedItem("viewonly").getNodeValue(), new String[]{"1","true"}) : false;
+			if(isViewOnly)  colMp.put(FormInputDefintion.VIEW_ONLY, "1");
 		}
 	}
 
@@ -288,13 +294,22 @@ public class EcRenderTable extends Basis implements Cloneable {
 							compareValue(mp.get(ColumnInfo.TYPE), ColumnQueryType.SELECT.toString())) {
 						return mp.get(QueryValueType.TEXT) != null;
 					} else if (compareValue(mp.get(ColumnInfo.TYPE), ColumnQueryType.RANGE.toString())) {
-						return mp.get(QueryValueType.RANGE_START) != null && mp.get(QueryValueType.RANGE_END) != null;
+						return mp.get(QueryValueType.RANGE_START) != null || mp.get(QueryValueType.RANGE_END) != null;
 					}
 				}
 			}
 			return false;
 		} else
 			return false;
+	}
+	
+	public boolean isQueryConditionExist(String[] columnIDs) {
+		if(columnIDs != null && columnIDs.length > 0) {
+			for(String columnID : columnIDs){
+				if(isQueryConditionExist(columnID)) return true;
+			}
+		}
+		return false;
 	}
 
 	public String getQueryTextValue(String columnID) {

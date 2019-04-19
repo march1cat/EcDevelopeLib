@@ -67,7 +67,7 @@ public abstract class ApplicationMainStart extends Basis{
 	protected void addParameterHelpDesc(String cmd,String valFmt,String desc){
 		if(helps == null) helps = new ArrayList<>();
 		if(cmd.startsWith("-")) helps.add(cmd + "="+valFmt+" --> " + desc);
-		else helps.add("-" + cmd + "=$value --> " + desc);
+		else helps.add("-" + cmd + "="+valFmt+" --> " + desc);
 	}
 	
 	protected boolean mountConfiguration(ApplicationConfig configuration){

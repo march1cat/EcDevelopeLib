@@ -1,6 +1,11 @@
 package ec.net.httpserver;
 
+import java.util.List;
+import java.util.Map;
+
+import ec.parser.JsonFactory;
 import ec.system.Basis;
+import ec.system.DeveloperMode;
 
 public abstract class ClassServiceHandler extends Basis{
 	
@@ -39,6 +44,20 @@ public abstract class ClassServiceHandler extends Basis{
 		this.request().response(res);
 	}
 	
+	
+	protected void responseListInJson(List<Map<Object,Object>> datas){
+		JsonFactory resData = new JsonFactory();
+		try {
+			resData.setJSONVariable("data", datas);
+			this.response(resData.encodeJSON());
+			if(DeveloperMode.isON()) {
+				log("Response List in Json, data = " + resData.encodeJSON());
+			}
+		} catch (Exception e) {
+			this.exportExceptionText(e);
+			this.except("Prepare Response Json Data Fail,Error = " + e.getMessage());
+		}
+	}
 	
 	
 	protected void responseRangeFile(String fpath) throws Exception{

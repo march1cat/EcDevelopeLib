@@ -16,6 +16,7 @@ import java.util.Map;
 
 import ec.parser.JsonFactory;
 import ec.system.Basis;
+import ec.system.DeveloperMode;
 
 public abstract class SQLCenter extends Basis{
 
@@ -249,6 +250,7 @@ public abstract class SQLCenter extends Basis{
 		
 		SQL += whereCon.toWhereClause();
 		if(order != null) SQL += order.toSQL();
+		if(DeveloperMode.isON()) log("Query Record, SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		
@@ -261,7 +263,7 @@ public abstract class SQLCenter extends Basis{
 		String SQL = "select * from " + tableName + " where ";
 		SQLCriterion whereCon = new SQLCriterion(data);
 		SQL += whereCon.toWhereClause();
-		
+		if(DeveloperMode.isON()) log("Check Record Exist, SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		ResultSet rs = pstmt.executeQuery();
@@ -270,13 +272,27 @@ public abstract class SQLCenter extends Basis{
 		return isExist;
 	}
 	
+	public int getCounts(String tableName) throws SQLException{
+		String SQL = "select count(*) as rAmt from " + tableName;
+		
+		if(DeveloperMode.isON()) log("Get Counts , SQL = " + SQL);
+		Statement stmt = this.conn().createStatement();
+		
+		ResultSet rs = stmt.executeQuery(SQL);
+		int count = 0;
+		if(rs.next()) {
+			count = rs.getInt(1);
+		}
+		this.closeDBComm(stmt, rs);
+		return count;
+	}
 	
 	public int getCounts(String tableName,Map<Object,Object> data) throws SQLException{
 		String SQL = "select count(*) as rAmt from " + tableName + " where ";
 		
 		SQLCriterion whereCon = new SQLCriterion(data);
 		SQL += whereCon.toWhereClause();
-		
+		if(DeveloperMode.isON()) log("Get Counts , SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		
@@ -289,6 +305,34 @@ public abstract class SQLCenter extends Basis{
 		return count;
 	}
 	
+	public List<Map<Object,String>>  getDinstinct(String tableName,String colName) throws SQLException{
+		String SQL = "select distinct(" + colName + ") as " + colName + " from " + tableName;
+		
+		
+		if(DeveloperMode.isON()) log("Get Distinct , SQL = " + SQL);
+		Statement stmt = this.conn().createStatement();
+		
+		ResultSet rs = stmt.executeQuery(SQL);
+		List<Map<Object,String>> results = convertQueryResultToList(rs);
+		this.closeDBComm(stmt, rs);
+		return results;
+	}
+	
+	public List<Map<Object,String>>  getDinstinct(String tableName,String colName,Map<Object,Object> data) throws SQLException{
+		String SQL = "select distinct(" + colName + ") as " + colName + " from " + tableName + " where ";
+		
+		SQLCriterion whereCon = new SQLCriterion(data);
+		SQL += whereCon.toWhereClause();
+		if(DeveloperMode.isON()) log("Get Distinct , SQL = " + SQL);
+		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
+		whereCon.fillPrepareStmtParas(pstmt);
+		
+		ResultSet rs = pstmt.executeQuery();
+		List<Map<Object,String>> results = convertQueryResultToList(rs);
+		this.closeDBComm(pstmt, rs);
+		return results;
+	}
+	
 	
 	public void updateRecord(String tableName,Map<Object,Object> data,Object[] primaryKeys) throws SQLException{
 		String SQL = "update " + tableName + " ";
@@ -299,7 +343,7 @@ public abstract class SQLCenter extends Basis{
 		SQL += " where ";
 		
 		SQL += whereCon.toWhereClause();
-		
+		if(DeveloperMode.isON()) log("Update Record , SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		
@@ -313,6 +357,7 @@ public abstract class SQLCenter extends Basis{
 		SQLCriterion whereCon = new SQLCriterion(data);
 		
 		SQL += whereCon.toWhereClause();
+		if(DeveloperMode.isON()) log("Delete Record , SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		

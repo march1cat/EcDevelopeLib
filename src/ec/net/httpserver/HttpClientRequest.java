@@ -117,9 +117,10 @@ public abstract class HttpClientRequest extends Basis{
 	
 	private void responseRange(ResponseServerBytesResource res){
 		this.markAsyncJob();
-		ResourceRangeProvider provider = new ResourceRangeProvider(this, res);
-		provider.startRunner();
-		
+		String playBackSession = this.headers().get("X-Playback-Session-Id");
+		res.setPlayBackSession(playBackSession);
+		res.setRequest(this);
+		ResourceRangeProvider.instance().addQueneObject(res);
 	}
 	
 	public void response404NotFound(){

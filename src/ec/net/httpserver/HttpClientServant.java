@@ -43,7 +43,6 @@ public class HttpClientServant extends NetConnectionServant{
 				if (inputLine.length() > 0) break;
 			}
 		}
-		//throw new Exception("Http Client Connection Close");
 	}
 	
 	public void resumeReceivingData() throws Exception {

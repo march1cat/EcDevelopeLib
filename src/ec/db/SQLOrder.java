@@ -26,7 +26,7 @@ public class SQLOrder extends Basis {
 
 	public String toSQL() {
 		if(orderColNames != null) {
-			StringBuffer SQL = new StringBuffer("order by ");
+			StringBuffer SQL = new StringBuffer("  order by ");
 			for(int i = 0 ;i < orderColNames.length;i++){
 				SQL.append(" " + orderColNames[i]);
 				if(i != orderColNames.length - 1) SQL.append(",");

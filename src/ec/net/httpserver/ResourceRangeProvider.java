@@ -7,29 +7,23 @@ import java.io.OutputStream;
 import java.net.SocketException;
 
 import ec.net.httpserver.Response.Header;
+import ec.system.DeveloperMode;
 import ec.system.Runner;
+import ec.system.controller.QueneDataController;
 
-public class ResourceRangeProvider extends Runner {
+public class ResourceRangeProvider extends QueneDataController {
 
-	private ResponseServerBytesResource res = null;
-	private HttpClientRequest request = null;
-	private boolean isAllSend = false;
-	private OutputStream os;
-	private int limitBufferSize = 1024 * 1024 * 20;
+	private static int LIMIT_BUFFER_SIZE = 1024 * 1024 * 200;
+	private static ResourceRangeProvider inst = null;
 	
-	public ResourceRangeProvider(HttpClientRequest request,ResponseServerBytesResource res){
-		this.res = res;
-		this.request = request;
-	}
-	
-	@Override
-	protected void running() {
+	protected void hadleFileStream(ResponseServerBytesResource res) {
+		OutputStream os = res.getRequest().getClientServant().getResponseOutputStream();
+		boolean isAllSend = false;
 		try {
-			os = request.getClientServant().getResponseOutputStream();
 			FileInputStream fis = new FileInputStream(res.getFpath());
 			int contentSize = fis.available();
 			res.markResponsePartialContent();
-			String rangeText  = request.headers().get("Range");
+			String rangeText  = res.getRequest().headers().get("Range");
 			int rangeStart = -1;
 			int rangeEnd = -1;
 			if(rangeText != null){
@@ -37,8 +31,6 @@ public class ResourceRangeProvider extends Runner {
 				if(compareValue(range, "0-1")) {
 					res.setHttpHeader(Header.CONTENT_LENGTH, "2");
 					res.setHttpHeader("Content-Range", "bytes 0-1/" + contentSize);
-					os.write(res.getHeader().getBytes());
-					os.write("\r\n".getBytes());
 					log("Start provide streaming, File = " + res.getFpath() + ",Range = 0-1"+ "/" + contentSize);
 				} else {
 					String[] r = range.split("-");
@@ -54,34 +46,19 @@ public class ResourceRangeProvider extends Runner {
 					}
 					res.setHttpHeader(Header.CONTENT_LENGTH, String.valueOf(rangeEnd - rangeStart + 1));
 					
-					os.write(res.getHeader().getBytes());
+					
 				}
 			}
+			os.write(res.getHeader().getBytes());
 			
 			if(rangeStart != -1 && rangeEnd != -1){
 				if(rangeStart > 0) {
-					if(rangeStart <=  limitBufferSize) {
-						byte[] readDone = new byte[rangeStart];
-						fis.read(readDone);
-					} else {
-						byte[] readDone = new byte[limitBufferSize];
-						int leftValue = rangeStart;
-						while(leftValue > 0){
-							if(leftValue >= limitBufferSize){
-								leftValue -= limitBufferSize;
-							} else {
-								readDone = new byte[leftValue];
-								leftValue = 0;
-							}
-							fis.read(readDone);
-						}
-					}
+					log("Skip File Stream, Value = " + rangeStart);
+					fis.skip(rangeStart);
 				}
 				
-				
-				
-				final int preferRange = rangeEnd - rangeStart;
-				if(preferRange <=  limitBufferSize) {
+				final int preferRange = rangeEnd - rangeStart + 1;
+				if(preferRange <=  LIMIT_BUFFER_SIZE) {
 					byte[] readToSend =  new byte[preferRange];
 					fis.read(readToSend);
 					try {
@@ -89,14 +66,13 @@ public class ResourceRangeProvider extends Runner {
 					} catch(Exception e){
 						handleWriteToClientException(e);
 					}
-					os.flush();
 				} else {
-					log("Notice PreferRange bigger than buffer Size,PreferR = " + preferRange + ", Buffer = " + limitBufferSize);
-					byte[] readToSend =  new byte[limitBufferSize];
+					log("Notice PreferRange bigger than buffer Size,PreferR = " + preferRange + ", Buffer = " + LIMIT_BUFFER_SIZE);
+					byte[] readToSend =  new byte[LIMIT_BUFFER_SIZE];
 					int leftValue = preferRange;
 					while(leftValue > 0){
-						if(leftValue >= limitBufferSize) {
-							leftValue = leftValue - limitBufferSize;
+						if(leftValue >= LIMIT_BUFFER_SIZE) {
+							leftValue = leftValue - LIMIT_BUFFER_SIZE;
 						} else {
 							readToSend = new byte[leftValue];
 							leftValue = 0;
@@ -107,37 +83,34 @@ public class ResourceRangeProvider extends Runner {
 						} catch(Exception e){
 							handleWriteToClientException(e);
 						}
-						//log("Left out file size = " + leftValue);
+						
+						//log("Left out file size = " + leftValue + ", playBackSession = " + res.getPlayBackSession() + ", range["+rangeStart+","+rangeEnd+"]");
 					}
-					os.flush();
 				}
-				
+				log("Response playBackSession = " + res.getPlayBackSession() + ", range["+rangeStart+","+rangeEnd+"]");
 				isAllSend = contentSize == rangeEnd + 1;
 				fis.close();
 			}
 		} catch (Exception e) {
 			this.exportExceptionText(e);
 		}
-		
-		this.stopRunner();
+		onRangeStreamingEnd(res,isAllSend);
 	}
 	
-	@Override
-	protected void end() {
+	protected void onRangeStreamingEnd(ResponseServerBytesResource res,boolean isAllSend) {
 		if(!isAllSend) {
 			try {
-				os.write("\r\n\r\n".getBytes());
-				os.flush();
+				res.getRequest().getClientServant().getResponseOutputStream().write("\r\n\r\n".getBytes());
+				res.getRequest().getClientServant().getResponseOutputStream().flush();
+				res.getRequest().closeClientConnection();
 			} catch (Exception e) {
 				handleWriteToClientException(e);
 			}
-			((HttpClientServant)request.getClientServant()).switchOnStepParingRequest();
-			((HttpClientServant)request.getClientServant()).triggerRunning();
 		} else {
 			try {
-				os.write("\r\n\r\n".getBytes());
-				os.flush();
-				request.closeClientConnection();
+				res.getRequest().getClientServant().getResponseOutputStream().write("\r\n\r\n".getBytes());
+				res.getRequest().getClientServant().getResponseOutputStream().flush();
+				res.getRequest().closeClientConnection();
 				log("Finish Output File Streaming, File = " + res.getFpath() + ", Close client connection");
 			} catch (Exception e) {
 				handleWriteToClientException(e);
@@ -150,7 +123,32 @@ public class ResourceRangeProvider extends Runner {
 	private void handleWriteToClientException(Exception e){
 		if(e instanceof SocketException && e.getMessage().indexOf("Broken pipe") >= 0){
 			//do Nothing
+			if(DeveloperMode.isON()) this.exportExceptionText(e);
 		} else this.exportExceptionText(e);
 	}
+
+	@Override
+	protected boolean validateNewDataInQuene(Object dataWillInQuene) {
+		return dataWillInQuene instanceof ResponseServerBytesResource;
+	}
+
+	@Override
+	protected void process(Object o) {
+		ResponseServerBytesResource data = (ResponseServerBytesResource) o;
+		this.hadleFileStream(data);
+	}
+	
+	public static ResourceRangeProvider instance(){
+		if( inst == null ) {
+			inst = new ResourceRangeProvider();
+			inst.startRunner();
+		}
+		return inst;
+	}
+	
+	protected static void setLimitBufferSize(int size){
+		LIMIT_BUFFER_SIZE = size;
+	}
+	
 	
 }

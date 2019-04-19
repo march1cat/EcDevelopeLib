@@ -99,6 +99,10 @@ public class JsonFactory extends Basis{
 		}
 		return mp;
 	}
+	@Override
+	public String toString() {
+		return this.encodeJSON();
+	}
 	
 	
 	
