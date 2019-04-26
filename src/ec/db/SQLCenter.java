@@ -305,6 +305,80 @@ public abstract class SQLCenter extends Basis{
 		return count;
 	}
 	
+	
+	public int getMinValue(String tableName,String colName) throws SQLException{
+		String SQL = "select min(" + colName + ") as MinValue from " + tableName;
+		
+		if(DeveloperMode.isON()) log("Get MinValue , SQL = " + SQL);
+		Statement stmt = this.conn().createStatement();
+		
+		ResultSet rs = stmt.executeQuery(SQL);
+		int value = -1;
+		if(rs.next()) {
+			value = rs.getInt(1);
+		}
+		this.closeDBComm(stmt, rs);
+		return value;
+	}
+	
+	public int getMinValue(String tableName,String colName,Map<Object,Object> data) throws SQLException{
+		String SQL = "select min(" + colName + ") as MinValue from " + tableName + " where ";
+		
+		SQLCriterion whereCon = new SQLCriterion(data);
+		SQL += whereCon.toWhereClause();
+		if(DeveloperMode.isON()) log("Get MinValue , SQL = " + SQL);
+		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
+		whereCon.fillPrepareStmtParas(pstmt);
+		
+		ResultSet rs = pstmt.executeQuery();
+		int value = -1;
+		if(rs.next()) {
+			value = rs.getInt(1);
+		}
+		this.closeDBComm(pstmt, rs);
+		return value;
+	}
+	
+	
+	public int getMaxValue(String tableName,String colName) throws SQLException{
+		String SQL = "select max(" + colName + ") as MaxValue from " + tableName;
+		
+		if(DeveloperMode.isON()) log("Get MaxValue , SQL = " + SQL);
+		Statement stmt = this.conn().createStatement();
+		
+		ResultSet rs = stmt.executeQuery(SQL);
+		int value = -1;
+		if(rs.next()) {
+			value = rs.getInt(1);
+		}
+		this.closeDBComm(stmt, rs);
+		return value;
+	}
+	
+	public int getMaxValue(String tableName,String colName,Map<Object,Object> data) throws SQLException{
+		String SQL = "select max(" + colName + ") as MaxValue from " + tableName + " where ";
+		
+		SQLCriterion whereCon = new SQLCriterion(data);
+		SQL += whereCon.toWhereClause();
+		if(DeveloperMode.isON()) log("Get MaxValue , SQL = " + SQL);
+		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
+		whereCon.fillPrepareStmtParas(pstmt);
+		
+		ResultSet rs = pstmt.executeQuery();
+		int value = -1;
+		if(rs.next()) {
+			value = rs.getInt(1);
+		}
+		this.closeDBComm(pstmt, rs);
+		return value;
+	}
+	
+	
+	
+	
+	
+	
+	
 	public List<Map<Object,String>>  getDinstinct(String tableName,String colName) throws SQLException{
 		String SQL = "select distinct(" + colName + ") as " + colName + " from " + tableName;
 		

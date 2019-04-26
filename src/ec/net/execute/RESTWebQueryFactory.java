@@ -18,7 +18,7 @@ public class RESTWebQueryFactory extends WebQueryFactory {
 	
 	public RESTWebQueryFactory(String host,String username,String password) throws ProtocolException {
 		super.setHost(host);
-		setAuthorization(username,password);
+		if(username != null && password != null) setAuthorization(username,password);
 	}
 
 	private void setAuthorization(String username,String password) throws ProtocolException{

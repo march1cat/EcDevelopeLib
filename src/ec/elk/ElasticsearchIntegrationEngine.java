@@ -1,10 +1,14 @@
 package ec.elk;
 
 import java.net.ProtocolException;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.json.JSONException;
 
+
 import ec.net.execute.RESTWebQueryFactory;
+import ec.parser.JsonFactory;
 import ec.system.Basis;
 import ec.system.DeveloperMode;
 
@@ -58,6 +62,17 @@ public class ElasticsearchIntegrationEngine extends Basis{
 			this.exportExceptionText(e);
 		}
 		return false;
+	}
+	
+	
+	public boolean writeDataToElastic(String index,String type,String eKey,Map<String,Object> postData) throws Exception{
+		JsonFactory json = new JsonFactory();
+		Iterator<String> iter = postData.keySet().iterator();
+		while(iter.hasNext()) {
+			String key = iter.next();
+			json.setJSONVariable(key, postData.get(key));
+		}
+		return writeDataToElastic(index,type,eKey,json.encodeJSON());
 	}
 	
 	

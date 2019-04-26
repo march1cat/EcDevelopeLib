@@ -93,6 +93,26 @@ public class DBConnection {
 		}
 	}
 	
+	public static void initialDB2SQLConnection(String host,int port,String dbName,String userName,String userPwd){
+		if(c_mp == null) c_mp = new HashMap<String,Connection>();
+		Connection c = c_mp.get(dbName);
+		if(c != null) c_mp.remove(dbName);
+		try {
+			Class.forName("com.ibm.db2.jcc.DB2Driver");
+			String conURL = "jdbc:db2://"+host+":"+port+"/"+dbName;
+			c = DriverManager.getConnection(conURL,userName,userPwd);
+			c_mp.put(dbName, c);
+		} catch (Exception e) {
+			QueneLogger logger = QueneLogger.getLogger();
+			if(logger != null) logger.log("Build Connection With Postgrel SQL Fail,"
+					+ "Host["+host+"],Port["+port+"],DBName["+dbName+"],UName["+userName+"],UPwd["+userPwd+"]");
+			ExceptionLogger errorLogger = ExceptionLogger.getLogger();
+			if(errorLogger != null) errorLogger.writeException(e);
+			else e.printStackTrace();
+			c = null;
+		}
+	}
+	
 	public static Connection getConnection(String dbName){
 		return c_mp.get(dbName);
 	}

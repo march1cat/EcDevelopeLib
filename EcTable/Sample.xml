@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EcRender>
+	<BindClass>ind.middle.tableview.DailyTransViewerHandler</BindClass>
+	<Setting id='delete'>true</Setting>
+	<Columns>
+		<Column id="DATE" type='SELECT' option='ind.middle.viewitem.SeletOptionProvider.dailyTransDateOptions'>日期</Column>
+		<Column id="CODE" type='TEXT' update='true'>代碼</Column>
+		<Column id="TRANS" type='RANGE'>成交價</Column>
+		<Column id="DELTA">變化量</Column>
+		<Column id="TRANS_AMT" sort='desc'>交易量</Column>
+		<Column id="LAST_CLOSE">昨日收盤</Column>
+		<Column id="HIGH">最高價</Column>
+		<Column id="LOW" show='0'>最低價</Column>
+	</Columns>
+	<Inputs>
+		<Input refer='YT_ID' readonly='1'>Form唯讀欄位註記</Input>
+		<Input refer='PARSE_LIST' formonly='1'>Query 不需要的欄位註記</Input>
+		<Input refer='PARSE_LIST' viewonly='1'>Form 不需要的欄位註記</Input>
+	</Inputs>
+</EcRender>
