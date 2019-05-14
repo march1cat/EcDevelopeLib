@@ -1,5 +1,7 @@
 package ec.net.httpserver;
 
+import java.net.URLDecoder;
+
 import ec.system.Runner;
 import ec.system.controller.QueneDataController;
 
@@ -36,6 +38,9 @@ public class ClientRequestControlCenter extends QueneDataController{
 						isClsServiceHandleDone = true;
 					} catch(Exception e){
 						exportExceptionText(e);
+						this.except("ClassEngineError  Request Detail = ");
+						this.log(clientRequest.showHeaders());
+						this.log(clientRequest.getParameters() != null ? URLDecoder.decode(clientRequest.getParameters().toString()) : "No Parameters!!");
 						clientRequest.response404NotFound();
 					}
 				} else {

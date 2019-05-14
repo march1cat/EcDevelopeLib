@@ -24,7 +24,7 @@ public abstract class SQLCenter extends Basis{
 	
 	private Map<Object,PreparedStatement> SQLExecuteBatchers = null;
 	protected String dbName = null;
-	
+	protected boolean outSQLText = false;
 	public SQLCenter(){}
 	
 	
@@ -39,7 +39,7 @@ public abstract class SQLCenter extends Basis{
 		conn().createStatement().executeUpdate(SQL);
 	}
 	
-	protected PreparedStatement gereateInsertPreparedStatement(String tableName,String[] insertColNameAr) throws SQLException{
+	public PreparedStatement gereateInsertPreparedStatement(String tableName,String[] insertColNameAr) throws SQLException{
 		String cols = "";
 		String para = "";
 		for(int i = 0 ;i < insertColNameAr.length; i++){
@@ -54,7 +54,7 @@ public abstract class SQLCenter extends Basis{
 		return conn().prepareStatement(SQL);
 	}
 	
-	protected PreparedStatement generateSQLBatcher(Object batcherName,String tableName,String[] insertColNameAr) throws SQLException{
+	public PreparedStatement generateSQLBatcher(Object batcherName,String tableName,String[] insertColNameAr) throws SQLException{
 		if(SQLExecuteBatchers == null) SQLExecuteBatchers = new HashMap<>();
 		if(SQLExecuteBatchers.get(batcherName) == null) {
 			PreparedStatement pstmt = gereateInsertPreparedStatement(tableName,insertColNameAr);
@@ -63,7 +63,7 @@ public abstract class SQLCenter extends Basis{
 		} else return SQLExecuteBatchers.get(batcherName);
 	}
 	
-	protected PreparedStatement generateSQLBatcher(Object batcherName,String SQL) throws SQLException{
+	public PreparedStatement generateSQLBatcher(Object batcherName,String SQL) throws SQLException{
 		if(SQLExecuteBatchers == null) SQLExecuteBatchers = new HashMap<>();
 		if(SQLExecuteBatchers.get(batcherName) == null) {
 			PreparedStatement pstmt = conn().prepareStatement(SQL);
@@ -136,7 +136,7 @@ public abstract class SQLCenter extends Basis{
 		else return -1;
 	}
 	
-	protected Connection conn(){
+	public Connection conn(){
 		if(DBConnection.getConnection(dbName) != null)  {
 			Connection conn = DBConnection.getConnection(dbName);
 			try {
@@ -238,6 +238,17 @@ public abstract class SQLCenter extends Basis{
 		return results;
 	}
 	
+	public List<Map<Object,String>> queryRecords(String tablename, SQLOrder order, SQLLimit limit) throws SQLException{
+		String SQL = "select * from " + tablename ;
+		if(order != null) SQL += " " + order.toSQL();
+		if(limit != null) SQL += " " + limit.toSQL();
+		Statement stmt = this.conn().createStatement();
+		ResultSet rs = stmt.executeQuery(SQL);
+		List<Map<Object,String>> results = convertQueryResultToList(rs);
+		this.closeDBComm(stmt, rs);
+		return results;
+	}
+	
 	
 	public List<Map<Object,String>> queryRecords(String tablename,Map<Object,Object> data) throws SQLException{
 		return queryRecords(tablename,data,null);
@@ -250,7 +261,7 @@ public abstract class SQLCenter extends Basis{
 		
 		SQL += whereCon.toWhereClause();
 		if(order != null) SQL += order.toSQL();
-		if(DeveloperMode.isON()) log("Query Record, SQL = " + SQL);
+		if(DeveloperMode.isON() || outSQLText) log("Query Record, SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		
@@ -259,11 +270,31 @@ public abstract class SQLCenter extends Basis{
 		this.closeDBComm(pstmt, rs);
 		return results;
 	}
+	
+	public List<Map<Object,String>> queryRecords(String tablename,Map<Object,Object> data, SQLOrder order, SQLLimit limit) throws SQLException{
+		String SQL = "select * from " + tablename + " where ";
+		SQLCriterion whereCon = new SQLCriterion(data);
+		
+		SQL += whereCon.toWhereClause();
+		if(order != null) SQL += " " + order.toSQL();
+		if(limit != null) SQL += " " + limit.toSQL();
+		if(DeveloperMode.isON() || outSQLText) log("Query Record, SQL = " + SQL);
+		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
+		whereCon.fillPrepareStmtParas(pstmt);
+		
+		ResultSet rs = pstmt.executeQuery();
+		List<Map<Object,String>> results = convertQueryResultToList(rs);
+		this.closeDBComm(pstmt, rs);
+		return results;
+	}
+	
+	
+	
 	public boolean isRecordExist(String tableName,Map<Object,Object> data) throws SQLException{
 		String SQL = "select * from " + tableName + " where ";
 		SQLCriterion whereCon = new SQLCriterion(data);
 		SQL += whereCon.toWhereClause();
-		if(DeveloperMode.isON()) log("Check Record Exist, SQL = " + SQL);
+		if(DeveloperMode.isON() || outSQLText) log("Check Record Exist, SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		ResultSet rs = pstmt.executeQuery();
@@ -275,7 +306,7 @@ public abstract class SQLCenter extends Basis{
 	public int getCounts(String tableName) throws SQLException{
 		String SQL = "select count(*) as rAmt from " + tableName;
 		
-		if(DeveloperMode.isON()) log("Get Counts , SQL = " + SQL);
+		if(DeveloperMode.isON() || outSQLText) log("Get Counts , SQL = " + SQL);
 		Statement stmt = this.conn().createStatement();
 		
 		ResultSet rs = stmt.executeQuery(SQL);
@@ -292,7 +323,7 @@ public abstract class SQLCenter extends Basis{
 		
 		SQLCriterion whereCon = new SQLCriterion(data);
 		SQL += whereCon.toWhereClause();
-		if(DeveloperMode.isON()) log("Get Counts , SQL = " + SQL);
+		if(DeveloperMode.isON() || outSQLText) log("Get Counts , SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		
@@ -309,7 +340,7 @@ public abstract class SQLCenter extends Basis{
 	public int getMinValue(String tableName,String colName) throws SQLException{
 		String SQL = "select min(" + colName + ") as MinValue from " + tableName;
 		
-		if(DeveloperMode.isON()) log("Get MinValue , SQL = " + SQL);
+		if(DeveloperMode.isON()  || outSQLText) log("Get MinValue , SQL = " + SQL);
 		Statement stmt = this.conn().createStatement();
 		
 		ResultSet rs = stmt.executeQuery(SQL);
@@ -326,7 +357,7 @@ public abstract class SQLCenter extends Basis{
 		
 		SQLCriterion whereCon = new SQLCriterion(data);
 		SQL += whereCon.toWhereClause();
-		if(DeveloperMode.isON()) log("Get MinValue , SQL = " + SQL);
+		if(DeveloperMode.isON() || outSQLText) log("Get MinValue , SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		
@@ -343,7 +374,7 @@ public abstract class SQLCenter extends Basis{
 	public int getMaxValue(String tableName,String colName) throws SQLException{
 		String SQL = "select max(" + colName + ") as MaxValue from " + tableName;
 		
-		if(DeveloperMode.isON()) log("Get MaxValue , SQL = " + SQL);
+		if(DeveloperMode.isON() || outSQLText) log("Get MaxValue , SQL = " + SQL);
 		Statement stmt = this.conn().createStatement();
 		
 		ResultSet rs = stmt.executeQuery(SQL);
@@ -360,7 +391,7 @@ public abstract class SQLCenter extends Basis{
 		
 		SQLCriterion whereCon = new SQLCriterion(data);
 		SQL += whereCon.toWhereClause();
-		if(DeveloperMode.isON()) log("Get MaxValue , SQL = " + SQL);
+		if(DeveloperMode.isON() || outSQLText) log("Get MaxValue , SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		
@@ -383,7 +414,7 @@ public abstract class SQLCenter extends Basis{
 		String SQL = "select distinct(" + colName + ") as " + colName + " from " + tableName;
 		
 		
-		if(DeveloperMode.isON()) log("Get Distinct , SQL = " + SQL);
+		if(DeveloperMode.isON() || outSQLText) log("Get Distinct , SQL = " + SQL);
 		Statement stmt = this.conn().createStatement();
 		
 		ResultSet rs = stmt.executeQuery(SQL);
@@ -397,7 +428,7 @@ public abstract class SQLCenter extends Basis{
 		
 		SQLCriterion whereCon = new SQLCriterion(data);
 		SQL += whereCon.toWhereClause();
-		if(DeveloperMode.isON()) log("Get Distinct , SQL = " + SQL);
+		if(DeveloperMode.isON()  || outSQLText) log("Get Distinct , SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		
@@ -417,7 +448,7 @@ public abstract class SQLCenter extends Basis{
 		SQL += " where ";
 		
 		SQL += whereCon.toWhereClause();
-		if(DeveloperMode.isON()) log("Update Record , SQL = " + SQL);
+		if(DeveloperMode.isON() || outSQLText) log("Update Record , SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		
@@ -431,7 +462,7 @@ public abstract class SQLCenter extends Basis{
 		SQLCriterion whereCon = new SQLCriterion(data);
 		
 		SQL += whereCon.toWhereClause();
-		if(DeveloperMode.isON()) log("Delete Record , SQL = " + SQL);
+		if(DeveloperMode.isON() || outSQLText) log("Delete Record , SQL = " + SQL);
 		PreparedStatement pstmt = this.conn().prepareStatement(SQL);
 		whereCon.fillPrepareStmtParas(pstmt);
 		

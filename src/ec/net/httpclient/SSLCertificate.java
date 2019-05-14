@@ -23,6 +23,13 @@ public class SSLCertificate {
 		sslFac = ((SSLSocketFactory)SSLSocketFactory.getDefault());
 	}
 	
+	
+	public SSLCertificate(String certPos,String pwd){
+		this.certPos = certPos;
+		this.pwd = pwd;
+		this.format = SSL_FORMAT.JKS;
+	}
+	
 	public SSLCertificate(String certPos,String pwd,Object format){
 		this.certPos = certPos;
 		this.pwd = pwd;

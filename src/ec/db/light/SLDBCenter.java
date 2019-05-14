@@ -18,7 +18,7 @@ public abstract class SLDBCenter extends SQLCenter{
 	}
 	
 	@Override
-	protected Connection conn(){
+	public Connection conn(){
 		if(conn == null){
 			SLDBConnection.initialConnection(dbPosition);
 			conn = SLDBConnection.getConnection(dbPosition);

@@ -7,6 +7,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 
 import ec.system.Basis;
 import ec.system.RunningPlatform;
@@ -24,6 +28,7 @@ public class WebQueryFactory extends Basis{
 	protected URL url = null;
 	private InputStream is;
 	protected HttpURLConnection urlCon;
+	private Map<String,String> headers = null;
 	
 	private String cookieValue = null;
 
@@ -39,8 +44,16 @@ public class WebQueryFactory extends Basis{
 	public String queryWeb(String postData) {
 		if (url != null) {
 			try {
+				setHeaderValue("User-Agent", "Macintosh; Intel Mac OS X 10_14_4");
 				if(cookieValue != null) {
 					setHeaderValue("Cookie", cookieValue);
+				}
+				if(headers != null) {
+					Iterator<String> iter = headers.keySet().iterator();
+					while(iter.hasNext()) {
+						String key = iter.next();
+						urlCon.setRequestProperty(key, headers.get(key));
+					}
 				}
 				if(postData != null) Write(postData);
 				return Read();
@@ -219,7 +232,8 @@ public class WebQueryFactory extends Basis{
 	}
 
 	public void setHeaderValue(String headerName,String headerValue){
-		urlCon.setRequestProperty(headerName, headerValue);
+		if(headers == null) headers = new HashMap<String, String>();
+		headers.put(headerName, headerValue);
 	}
 
 	public void setDataEncode(String dataEncode) {

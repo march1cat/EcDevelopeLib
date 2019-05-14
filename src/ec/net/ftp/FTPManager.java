@@ -19,28 +19,29 @@ public class FTPManager {
 	
 	
 	protected String ftp_server_host = null;
+	protected int ftp_server_port = 21;
+	
+	
 	private String ftp_acc = null;
 	private String ftp_pass = null;
 	private Object transferType = null;
 	
 	protected FTPClient ftp = null;
-	private String nowCursor_Path = "";
+	private String nowCursor_Path = null;
 	
-	public FTPManager(String ftp_server_host,String ftp_acc,String ftp_pass){
+	public FTPManager(String ftp_server_host){
 		this.ftp_server_host = ftp_server_host;
-		this.ftp_acc = ftp_acc;
-		this.ftp_pass = ftp_pass;
-		transferType = FileTransferType.TEXT;
+		transferType = FileTransferType.BINARY;
 	}
-	public FTPManager(String ftp_server_host,String ftp_acc,String ftp_pass,Object transferType){
+	
+	public FTPManager(String ftp_server_host,int ftp_server_port){
 		this.ftp_server_host = ftp_server_host;
-		this.ftp_acc = ftp_acc;
-		this.ftp_pass = ftp_pass;
-		this.transferType = transferType;
+		this.ftp_server_port = ftp_server_port;
+		transferType = FileTransferType.BINARY;
 	}
 	
 	private void iniConnector() throws IOException, FTPException{
-		ftp = new FTPClient(ftp_server_host);
+		ftp = new FTPClient(ftp_server_host,ftp_server_port,0,"UTF-8");
 	}
 
 	public void connect() throws IOException, FTPException{
@@ -48,7 +49,8 @@ public class FTPManager {
 		FTPMessageCollector listener = new FTPMessageCollector();
 		ftp.setMessageListener(listener);
 		
-		LoginFTPServer();
+		if(this.ftp_acc  != null && this.ftp_pass != null)  LoginFTPServer();
+		
 		ftp.setConnectMode(FTPConnectMode.PASV);
 		if(transferType == FileTransferType.BINARY) ftp.setType(FTPTransferType.BINARY);
 		else ftp.setType(FTPTransferType.ASCII);
@@ -68,7 +70,7 @@ public class FTPManager {
 	//download
 	public void downloadFile(String localFilePath,String remoteFilePath) throws IOException, FTPException{
 		FileOutputStream fos = new FileOutputStream(localFilePath);
-		ftp.get(fos, nowCursor_Path.concat(remoteFilePath));
+		ftp.get(fos, nowCursor_Path != null ? nowCursor_Path.concat(remoteFilePath) : remoteFilePath);
 	}
 	public void downloadFile(String localFilePath,String remotePath,String remoteFileName) throws IOException, FTPException{
 		FileOutputStream fos = new FileOutputStream(localFilePath);
@@ -84,7 +86,7 @@ public class FTPManager {
 	//upload
 	public void uploadFile(String localFileName,String remoteFileName) throws IOException, FTPException{
 		FileInputStream fis = new FileInputStream(localFileName);
-		ftp.put(fis, nowCursor_Path.concat(remoteFileName));
+		ftp.put(fis, nowCursor_Path != null ? nowCursor_Path.concat(remoteFileName) : remoteFileName);
 	}
 	public void uploadFile(String localFileName,String remoteFilePath,String remoteFileName) throws IOException, FTPException{
 		CD_Path(remoteFilePath);
@@ -94,7 +96,19 @@ public class FTPManager {
 	
 	public void removeFile(String remoteFilePath,String remoteFileName) throws IOException, FTPException{
 		CD_Path(remoteFilePath);
-		ftp.delete(nowCursor_Path + remoteFileName);
+		ftp.delete(nowCursor_Path != null ? nowCursor_Path + remoteFileName : remoteFileName);
+	}
+
+	public void setFtp_acc(String ftp_acc) {
+		this.ftp_acc = ftp_acc;
+	}
+
+	public void setFtp_pass(String ftp_pass) {
+		this.ftp_pass = ftp_pass;
+	}
+
+	public void setTransferType(Object transferType) {
+		this.transferType = transferType;
 	}
 	
 	

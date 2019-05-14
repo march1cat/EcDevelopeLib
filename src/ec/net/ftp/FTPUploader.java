@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import com.enterprisedt.net.ftp.FTPException;
-import ec.net.FileUploader;
 
 public class FTPUploader extends FileUploader{
 	
@@ -14,6 +13,7 @@ public class FTPUploader extends FileUploader{
 	
 	
 	private String ftpHost = null;
+	private int ftpPort = 21;
 	private String ftpAcc = null;
 	private String ftpPass = null;
 	private String remoteSaveUri = null;
@@ -21,49 +21,67 @@ public class FTPUploader extends FileUploader{
 	
 	private FTPManager ftp = null;
 	
-	public FTPUploader(String ftpHost,String ftpAcc,String ftpPass,String remoteSaveUri){
+	public FTPUploader(String ftpHost){
 		this.ftpHost = ftpHost;
-		this.ftpAcc = ftpAcc;
-		this.ftpPass = ftpPass;
-		this.remoteSaveUri = remoteSaveUri;
 	}
 	
 	
-	public FTPUploader(String ftpHost,String ftpAcc,String ftpPass,String remoteSaveUri,boolean autoReUploadWhileFail){
+	public FTPUploader(String ftpHost,int ftpPort){
 		this.ftpHost = ftpHost;
-		this.ftpAcc = ftpAcc;
-		this.ftpPass = ftpPass;
-		this.remoteSaveUri = remoteSaveUri;
-		this.autoReUploadWhileFail = autoReUploadWhileFail;
+		this.ftpPort = ftpPort;
 	}
 	
 	@Override
-	protected void uploadProcess(File uploadFile) {
-		if(ftp == null)  ftp = new FTPManager(ftpHost, ftpAcc, ftpPass);
+	protected void uploadProcess(UploadRequest request) {
+		if(ftp == null)  {
+			ftp = new FTPManager(ftpHost,ftpPort);
+			ftp.setFtp_acc(ftpAcc);
+			ftp.setFtp_pass(ftpPass);
+		}
+		
 		log("Upload File To FTP Server["+ftpHost+"],File Uri = " + 
-				uploadFile.getAbsolutePath() +  ", Remote File Uri = " + remoteSaveUri + "/" + uploadFile.getName());
+				request.getFilePath() +  ", Remote File Uri = " + request.getSaveTo() );
 		try {
 			ftp.connect();
-			ftp.uploadFile(uploadFile.getAbsolutePath(), remoteSaveUri, uploadFile.getName());
+			ftp.uploadFile(request.getFilePath(), request.getSaveTo());
 			ftp.LogoutFTPServer();
-			onUploadComplete(uploadFile);
-			log("Upload File Finish["+uploadFile.getAbsolutePath()+"]!!");
+			request.markEndSuccess();
+			onUploadComplete(request);
+			log("Upload File Finish["+request.getFilePath()+"]!!");
 		} catch (IOException e) {
-			this.except("Upload File[" + uploadFile.getAbsolutePath() + "] Fail,Retry Upload Later,Error = " + e.getMessage(), this.getClass().getName());
+			this.except("Upload File[" + request.getFilePath() + "] Fail,Retry Upload Later,Error = " + e.getMessage(), this.getClass().getName());
 			this.exportExceptionText(e);
-			if(autoReUploadWhileFail) this.addQueneObject(uploadFile);
-			onUploadFail(UploadEvent.UPLOAD_FAIL,uploadFile);
+			request.markFailRetry();
+			if(autoReUploadWhileFail) this.addQueneObject(request);
+			onUploadFail(UploadEvent.UPLOAD_FAIL,request);
 		} catch (FTPException e) {
-			this.except("Upload File[" + uploadFile.getAbsolutePath() + "] Fail,Retry Upload Later,Error = " + e.getMessage(), this.getClass().getName());
+			this.except("Upload File[" + request.getFilePath() + "] Fail,Retry Upload Later,Error = " + e.getMessage(), this.getClass().getName());
 			this.exportExceptionText(e);
-			if(autoReUploadWhileFail) this.addQueneObject(uploadFile);
-			onUploadFail(UploadEvent.UPLOAD_FAIL,uploadFile);
+			request.markFailRetry();
+			if(autoReUploadWhileFail) this.addQueneObject(request);			
+			onUploadFail(UploadEvent.UPLOAD_FAIL,request);
 		} catch (Exception e) {
-			this.except("Upload File[" + uploadFile.getAbsolutePath() + "] Fail,Retry Upload Later,Error = " + e.getMessage(), this.getClass().getName());
+			this.except("Upload File[" + request.getFilePath() + "] Fail,Retry Upload Later,Error = " + e.getMessage(), this.getClass().getName());
 			this.exportExceptionText(e);
-			if(autoReUploadWhileFail) this.addQueneObject(uploadFile);
-			onUploadFail(UploadEvent.UPLOAD_FAIL,uploadFile);
+			request.markFailRetry();
+			if(autoReUploadWhileFail) this.addQueneObject(request);
+			onUploadFail(UploadEvent.UPLOAD_FAIL,request);
 		}
 		threadHold(3000);
 	}
+
+
+	public void setFtpAcc(String ftpAcc) {
+		this.ftpAcc = ftpAcc;
+	}
+
+
+	public void setFtpPass(String ftpPass) {
+		this.ftpPass = ftpPass;
+	}
+	
+	
+	
+	
+	
 }
