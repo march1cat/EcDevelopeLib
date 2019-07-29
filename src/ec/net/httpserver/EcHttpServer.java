@@ -76,6 +76,8 @@ public abstract class EcHttpServer extends ServerService{
 				} catch(Exception e){
 					exportExceptionText(e);
 					onGenereateRequestFail(cachRequest,e);
+					((HttpClientServant)servant).closeStepParingRequest();
+					((HttpClientServant)servant).closeClientConnection();
 				}
 			}
 	}

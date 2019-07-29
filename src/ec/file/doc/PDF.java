@@ -73,7 +73,6 @@ public class PDF extends Basis{
 		//PageSizeWithRotate = PageSize.A4.rotate();
 		//Rectangle r = new Rectangle(0,0,1300,1000);
 		doc = new Document(PageSizeWithRotate);
-		
 		PdfWriter.getInstance(doc, new FileOutputStream(output_filename_With_Path));
 		doc.open();
 		

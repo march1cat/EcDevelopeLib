@@ -26,7 +26,13 @@ public class SessionController extends Basis{
 	}
 	
 	private String buildSessionID(){
-		String sid = StringManager.md5(StringManager.getSystemDate("yyyyMMddHHmmSS") + getSSerno());
+		String sid = null;
+		try {
+			sid = StringManager.md5(StringManager.getSystemDate("yyyyMMddHHmmSS") + getSSerno());
+		} catch (Exception e) {
+			this.except("Generate md5 ssession fail,Error = " + e.getMessage());
+			this.exportExceptionText(e);
+		}
 		if(DeveloperMode.isON()) log("Build Session ID = " + sid);
 		return sid;
 	}

@@ -72,6 +72,7 @@ EcBatchProcessor.prototype.addRowData = function(rowData){
         for(var i = 0 ; i < this.keyRefers.length ; i++){
             var td = document.createElement('td');
             e_tr.appendChild(td);
+            if(i == 0)  rowData['RowHtmlComponent']['IDText'] = td;
             if(rowData[this.keyRefers[i]]) 
                 td.innerHTML = rowData[this.keyRefers[i]];
             else 
@@ -116,8 +117,9 @@ EcBatchProcessor.prototype.resortRowID = function(){
     var cachDatas = this.getBatchDatas();
     if(cachDatas && cachDatas.length > 0){
        for(var i in cachDatas){
-           cachDatas[i]['ID'] = i + 1;
+           cachDatas[i]['ID'] = parseInt(i) + 1;
            var rmBtn = cachDatas[i]['RowHtmlComponent']['RowRmButton'];
+            cachDatas[i]['RowHtmlComponent']['IDText'].innerHTML =  cachDatas[i]['ID'];
            rmBtn.setAttribute('removeID',cachDatas[i]['ID']);
        }
     }

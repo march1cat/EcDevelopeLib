@@ -5,7 +5,7 @@
 			<attribute name="ignore_optional_problems" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/excel/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/excel/poi-3.10.1-20140818.jar"/>
 	<classpathentry kind="lib" path="lib/excel/poi-ooxml-3.10.1-20140818.jar"/>
@@ -47,5 +47,6 @@
 	<classpathentry kind="lib" path="lib/dropbox/dropbox-core-sdk-3.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/dropbox/jackson-core-2.7.4.jar"/>
 	<classpathentry kind="lib" path="lib/jsoup-1.11.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.12.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -46,7 +46,7 @@ public class ExceptionLogger implements Runnable {
 				if(error != null){
 					if(goPrintTrace) error.printStackTrace();
 					String exceptTime = StringManager.getSystemDate("yyyy-MM-dd HH_mm_ss");
-					if(writeToFile) FileManager.bufferWrite(storageDir.Uri() + "Error_" + exceptTime + ".html",toExceptionHtmlDesc(exceptTime,error), encode);
+					if(writeToFile) FileManager.bufferWrite(storageDir.Uri() + "Error_" + exceptTime + "." + pureExceptionType(error) + ".html",toExceptionHtmlDesc(exceptTime,error), encode);
 				}
 			}
 			try {
@@ -127,6 +127,12 @@ public class ExceptionLogger implements Runnable {
 		html.append("</html>");
 		
 		return html.toString();
+	}
+	
+	private String pureExceptionType(Exception e) {
+		String name = e.getClass().getName();
+		String k = name.indexOf(".") >= 0 ? name.substring(name.lastIndexOf(".") + 1) : name;
+		return k;
 	}
 	
 	

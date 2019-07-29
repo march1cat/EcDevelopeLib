@@ -23,6 +23,7 @@ public abstract class SQLCenter extends Basis{
 	protected Connection conn = null;
 	
 	private Map<Object,PreparedStatement> SQLExecuteBatchers = null;
+	private Map<Object,SQLBatch> SQLBatchs = null;
 	protected String dbName = null;
 	protected boolean outSQLText = false;
 	public SQLCenter(){}
@@ -96,6 +97,16 @@ public abstract class SQLCenter extends Basis{
 				Object key = iter.next();
 				SQLExecuteBatchers.get(key).executeBatch();
 				SQLExecuteBatchers.get(key).close();
+				iter.remove();
+			}
+		}
+		
+		if(SQLBatchs != null) {
+			Iterator<Object> iter = SQLBatchs.keySet().iterator();
+			while(iter.hasNext()){
+				Object key = iter.next();
+				SQLBatchs.get(key).getPtmt().executeBatch();
+				SQLBatchs.get(key).getPtmt().close();
 				iter.remove();
 			}
 		}
@@ -195,36 +206,70 @@ public abstract class SQLCenter extends Basis{
 	}
 	
 	
-	public boolean insertWithMap(String tableName,Map<Object,Object> data){
+	public void insertWithMap(String tableName,Map<Object,Object> data) throws SQLException{
+		Object[] keysAr = new Object[data.size()];
+		String[] colsAr = new String[data.size()];
+		Iterator<Object> iter = data.keySet().iterator();
+		int cursor = 0;
+		while(iter.hasNext()){
+			Object key = iter.next();
+			colsAr[cursor] = key.toString();
+			keysAr[cursor] = key;
+			cursor++;
+		}
+		PreparedStatement ptmt =  gereateInsertPreparedStatement(tableName,colsAr);
+		for(int i = 1;i <= colsAr.length;i++){
+			Object value = data.get(keysAr[i - 1]);
+			if(value instanceof Integer) 
+				ptmt.setInt(i, value != null ? parseInt(value.toString(), -1) : null);
+			else if(value instanceof Date) 
+				ptmt.setTimestamp(i, value != null ? new Timestamp(((Date) value).getTime())  : null);
+			else 
+				ptmt.setString(i, value != null ? value.toString() : null);
+		}
+		ptmt.executeUpdate();
+		this.closeDBComm(ptmt, null);
+	}
+	//TODO
+	public boolean batchInsertWithMap(String batchName,String tableName,Map<Object,Object> data){
 		try {
-			Object[] keysAr = new Object[data.size()];
-			String[] colsAr = new String[data.size()];
-			Iterator<Object> iter = data.keySet().iterator();
-			int cursor = 0;
-			while(iter.hasNext()){
-				Object key = iter.next();
-				colsAr[cursor] = key.toString();
-				keysAr[cursor] = key;
-				cursor++;
+			if(SQLBatchs == null) SQLBatchs = new HashMap<>();
+			SQLBatch batch = SQLBatchs.get(batchName);
+			if(batch == null) {
+				Object[] keysAr = new Object[data.size()];
+				String[] colsAr = new String[data.size()];
+				Iterator<Object> iter = data.keySet().iterator();
+				int cursor = 0;
+				while(iter.hasNext()){
+					Object key = iter.next();
+					colsAr[cursor] = key.toString();
+					keysAr[cursor] = key;
+					cursor++;
+				}
+				PreparedStatement ptmt =  gereateInsertPreparedStatement(tableName,colsAr);
+				batch = new SQLBatch(ptmt,keysAr);
+				SQLBatchs.put(batchName, batch);
 			}
-			PreparedStatement ptmt =  gereateInsertPreparedStatement(tableName,colsAr);
-			for(int i = 1;i <= colsAr.length;i++){
-				Object value = data.get(keysAr[i - 1]);
+			
+			for(int i = 1;i <= batch.getKeys().length;i++){
+				Object value = data.get(batch.getKeys()[i - 1]);
 				if(value instanceof Integer) 
-					ptmt.setInt(i, value != null ? parseInt(value.toString(), -1) : null);
+					batch.getPtmt().setInt(i, value != null ? parseInt(value.toString(), -1) : null);
 				else if(value instanceof Date) 
-					ptmt.setTimestamp(i, value != null ? new Timestamp(((Date) value).getTime())  : null);
+					batch.getPtmt().setTimestamp(i, value != null ? new Timestamp(((Date) value).getTime())  : null);
 				else 
-					ptmt.setString(i, value != null ? value.toString() : null);
+					batch.getPtmt().setString(i, value != null ? value.toString() : null);
 			}
-			ptmt.executeUpdate();
-			this.closeDBComm(ptmt, null);
+			batch.getPtmt().addBatch();
 			return true;
 		} catch (Exception e){
 			exportExceptionText(e);
 			return false;
 		}
 	}
+	
+	
+	
 	public List<Map<Object,String>> queryRecords(String tablename) throws SQLException{
 		return queryRecords(tablename,new SQLOrder());
 	}

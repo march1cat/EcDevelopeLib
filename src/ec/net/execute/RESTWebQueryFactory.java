@@ -21,10 +21,6 @@ public class RESTWebQueryFactory extends WebQueryFactory {
 		if(username != null && password != null) setAuthorization(username,password);
 	}
 
-	private void setAuthorization(String username,String password) throws ProtocolException{
-		Authenticator.setDefault(new HttpAuthorization(username,password));
-	}
-	
 	public void setReturnDataType(String ACCEPT_TYPE){
 		urlCon.setRequestProperty("Accept", ACCEPT_TYPE);
 	}

@@ -5,13 +5,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-
+import ec.net.auth.HttpAuthorization;
 import ec.system.Basis;
 import ec.system.RunningPlatform;
 
@@ -39,6 +41,10 @@ public class WebQueryFactory extends Basis{
 		} catch (Exception e) {
 			this.exportExceptionText(e);
 		}
+	}
+	
+	public void setAuthorization(String username,String password) throws ProtocolException{
+		Authenticator.setDefault(new HttpAuthorization(username,password));
 	}
 
 	public String queryWeb(String postData) {
