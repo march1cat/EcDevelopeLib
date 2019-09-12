@@ -21,11 +21,15 @@ public class ExceptionLogger implements Runnable {
 	private boolean isRun = true;
 	private String encode = null;
 	
+	private final static String threadName = "EcExceptionLogger";
+	
 	public ExceptionLogger(String exceptionFileStorageUri,String encode){
 		storageDir = new EcDirector(exceptionFileStorageUri,true);
 		logQuene = new ConcurrentLinkedQueue<Exception>(); 
 		this.encode = encode;
-		(new Thread(this)).start();
+		Thread self = new Thread(this);
+		self.setName(threadName);
+		self.start();
 	}
 	
 	public synchronized void writeException(Exception e){

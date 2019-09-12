@@ -1,5 +1,6 @@
 /***********
-Version 1.5 
+Version 1.6
+1.6 ->  Support delay query to fix schema not ready issue
 ************/
 function EcTableRender(serverView,renderTagID){
     this.serverView = serverView;
@@ -11,6 +12,12 @@ EcTableRender.main_container = undefined;
 EcTableRender.prototype.getMainContainer = function(){return this.main_container;}
 EcTableRender.tableTitleCodes = [];
 EcTableRender.prototype.getTableTitleCodes = function(){return this.tableTitleCodes;}
+
+
+EcTableRender.initDone = false;
+EcTableRender.prototype.isInitDone = function(){return this.initDone;}
+EcTableRender.prototype.markInitDone = function(){this.initDone = true;}
+
 
 EcTableRender.queryConditonInput = [];
 EcTableRender.prototype.getQueryInputByColCode = function(ColCode){
@@ -505,6 +512,7 @@ EcTableRender.prototype.loadSchema = function(){
             }
         } else alert('Render EcTable Fail,Target Tag ID = ' + self.renderTagID);
         if(self.triggerEvent().onSchemaLoadOver) self.triggerEvent().onSchemaLoadOver();
+        self.markInitDone();
     });
 }
 
@@ -517,6 +525,13 @@ EcTableRender.prototype.showDataResultMessage = function(message){
 }
 
 EcTableRender.prototype.query = function(queryOption){
+    if(!this.isInitDone()){
+        var self = this;
+        setTimeout(function(){
+            self.query(queryOption);        
+        },500);
+        return;
+    }
     if(this.event.onPressQueryButton) this.event.onPressQueryButton();
     var queryText = "";
     if(queryOption){

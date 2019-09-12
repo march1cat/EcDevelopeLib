@@ -11,120 +11,104 @@ import ec.log.QueneLogger;
 
 public class DBConnection {
 
-	public static Map<String,Connection> c_mp;
+	public static Map<String,ConnectLink> c_mp;
 	
 	public static void initialMySQLConnection(String host,int port,String dbName,String userName,String userPwd){
-		if(c_mp == null) c_mp = new HashMap<String,Connection>();
-		Connection c = c_mp.get(dbName);
-		if(c != null) c_mp.remove(dbName);
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			c = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + dbName,userName,userPwd);
-			c_mp.put(dbName, c);
-		} catch (Exception e) {
-			QueneLogger logger = QueneLogger.getLogger();
-			if(logger != null) logger.log("Build Connection With MySQL Server Fail,"
-					+ "Host["+host+"],Port["+port+"],DBName["+dbName+"],UName["+userName+"],UPwd["+userPwd+"]");
-			ExceptionLogger errorLogger = ExceptionLogger.getLogger();
-			if(errorLogger != null) errorLogger.writeException(e);
-			else e.printStackTrace();
-			c = null;
-		}
+		ConnectLink cl = initConnLink(host,port,dbName,userName,userPwd);
+		String className = "com.mysql.jdbc.Driver";
+		String connString = "jdbc:mysql://" + cl.getDbHost() + ":" + cl.getDbPort() + "/" + cl.getDbName();
+		buildConnection(cl,className,connString,false);
 	}
 	
 	
 	public static void initialSQLServerConnection(String host,int port,String dbName,String userName,String userPwd){
-		if(c_mp == null) c_mp = new HashMap<String,Connection>();
-		Connection c = c_mp.get(dbName);
-		if(c != null) c_mp.remove(dbName);
-		try {
-			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-			String conURL = "jdbc:sqlserver://"+host+":"+port+";databaseName="+dbName+";user="+userName+";password="+userPwd+";loginTimeout=500;socketTimeout=500"; //for jdbc 2.0
-			c = DriverManager.getConnection(conURL);
-			c_mp.put(dbName, c);
-		} catch (Exception e) {
-			QueneLogger logger = QueneLogger.getLogger();
-			if(logger != null) logger.log("Build Connection With SQL Server Fail,"
-					+ "Host["+host+"],Port["+port+"],DBName["+dbName+"],UName["+userName+"],UPwd["+userPwd+"]");
-			ExceptionLogger errorLogger = ExceptionLogger.getLogger();
-			if(errorLogger != null) errorLogger.writeException(e);
-			else e.printStackTrace();
-			c = null;
-		}
+		ConnectLink cl = initConnLink(host,port,dbName,userName,userPwd);
+		String className = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+		String connString = "jdbc:sqlserver://"+cl.getDbHost()+":"+cl.getDbPort()+";databaseName="+cl.getDbName()+";user="+cl.getUserName()+";password="+cl.getPwd()+";loginTimeout=500;socketTimeout=500"; //for jdbc 2.0
+		buildConnection(cl,className,connString,true);
 	}
 	
 	public static void initialSQLServerExConnectionByJTDS(String host,int port,String dbName,String domain,String userName,String userPwd){
-		if(c_mp == null) c_mp = new HashMap<String,Connection>();
-		Connection c = c_mp.get(dbName);
-		if(c != null) c_mp.remove(dbName);
-		try {
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			String conURL = "jdbc:jtds:sqlserver://"+host+";instance=SQLEXPRESS;DatabaseName=" + dbName + ";Domain=" + domain; //for jdbc 2.0
-			c = DriverManager.getConnection(conURL,userName,userPwd);
-			c_mp.put(dbName, c);
-		} catch (Exception e) {
-			QueneLogger logger = QueneLogger.getLogger();
-			if(logger != null) logger.log("Build Connection With SQL Server Fail,"
-					+ "Host["+host+"],Port["+port+"],DBName["+dbName+"],UName["+userName+"],UPwd["+userPwd+"]");
-			ExceptionLogger errorLogger = ExceptionLogger.getLogger();
-			if(errorLogger != null) errorLogger.writeException(e);
-			else e.printStackTrace();
-			c = null;
-		}
+		ConnectLink cl = initConnLink(host,port,dbName,userName,userPwd);
+		String className = "net.sourceforge.jtds.jdbc.Driver";
+		String connString = "jdbc:jtds:sqlserver://"+cl.getDbHost()+";instance=SQLEXPRESS;DatabaseName=" + cl.getDbName() + ";Domain=" + domain; //for jdbc 2.0
+		buildConnection(cl,className,connString,false);
 	}
 	
 	public static void initialPostgrelSQLConnection(String host,int port,String dbName,String userName,String userPwd){
-		if(c_mp == null) c_mp = new HashMap<String,Connection>();
-		Connection c = c_mp.get(dbName);
-		if(c != null) c_mp.remove(dbName);
-		try {
-			Class.forName("org.postgresql.Driver");
-			String conURL = "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
-			c = DriverManager.getConnection(conURL,userName,userPwd);
-			c_mp.put(dbName, c);
-		} catch (Exception e) {
-			QueneLogger logger = QueneLogger.getLogger();
-			if(logger != null) logger.log("Build Connection With Postgrel SQL Fail,"
-					+ "Host["+host+"],Port["+port+"],DBName["+dbName+"],UName["+userName+"],UPwd["+userPwd+"]");
-			ExceptionLogger errorLogger = ExceptionLogger.getLogger();
-			if(errorLogger != null) errorLogger.writeException(e);
-			else e.printStackTrace();
-			c = null;
-		}
+		ConnectLink cl = initConnLink(host,port,dbName,userName,userPwd);
+		String className = "org.postgresql.Driver";
+		String connString = "jdbc:postgresql://" + cl.getDbHost() + ":" + cl.getDbPort()+ "/" + cl.getDbName();
+		buildConnection(cl,className,connString,false);
 	}
 	
 	public static void initialDB2SQLConnection(String host,int port,String dbName,String userName,String userPwd){
-		if(c_mp == null) c_mp = new HashMap<String,Connection>();
-		Connection c = c_mp.get(dbName);
-		if(c != null) c_mp.remove(dbName);
+		ConnectLink cl = initConnLink(host,port,dbName,userName,userPwd);
+		String className = "com.ibm.db2.jcc.DB2Driver";
+		String connString = "jdbc:db2://"+cl.getDbHost()+":"+cl.getDbPort()+"/"+cl.getDbName();
+		buildConnection(cl,className,connString,false);
+	}
+	
+	private static void buildConnection(ConnectLink cl , String driverClassName,String connectionString,boolean textContainUserInfo) {
 		try {
-			Class.forName("com.ibm.db2.jcc.DB2Driver");
-			String conURL = "jdbc:db2://"+host+":"+port+"/"+dbName;
-			c = DriverManager.getConnection(conURL,userName,userPwd);
-			c_mp.put(dbName, c);
-		} catch (Exception e) {
+			cl.setDriverClassName(driverClassName);
+			cl.setConnText(connectionString);
+			cl.setConnTextContainUserInfo(textContainUserInfo);
+			
+			Class.forName(driverClassName);
+			Connection c = textContainUserInfo ? 
+					DriverManager.getConnection(connectionString) : 
+						DriverManager.getConnection(connectionString,cl.getUserName(),cl.getPwd());
+			cl.setDbConn(c);
+		} catch(Exception e) {
 			QueneLogger logger = QueneLogger.getLogger();
-			if(logger != null) logger.log("Build Connection With Postgrel SQL Fail,"
-					+ "Host["+host+"],Port["+port+"],DBName["+dbName+"],UName["+userName+"],UPwd["+userPwd+"]");
+			if(logger != null) logger.log("Build Connection With MySQL Server Fail,"
+					+ "Host["+cl.getDbHost()+"],Port["+cl.getDbPort()+"],DBName["+cl.getDbName()+"],UName["+cl.getUserName()+"],UPwd["+cl.getPwd()+"]");
 			ExceptionLogger errorLogger = ExceptionLogger.getLogger();
 			if(errorLogger != null) errorLogger.writeException(e);
 			else e.printStackTrace();
-			c = null;
+			if(cl != null) cl.closeLink();
 		}
 	}
 	
-	public static Connection getConnection(String dbName){
-		return c_mp.get(dbName);
+	
+	private static ConnectLink initConnLink(String host,int port,String dbName,String userName,String userPwd) {
+		if(c_mp == null) c_mp = new HashMap<String,ConnectLink>();
+		ConnectLink cl = c_mp.get(dbName);
+		if(cl != null) cl.closeLink();
+		else {
+			cl = new ConnectLink(dbName);
+			cl.setDbHost(host);
+			cl.setDbPort(port);
+			cl.setUserName(userName);
+			cl.setPwd(userPwd);
+			c_mp.put(dbName, cl);
+		}
+		return cl;
 	}
+	
+	public static Connection getConnection(String dbName){
+		if(c_mp != null){
+			ConnectLink cl = c_mp.get(dbName);
+			return cl != null ? cl.getDbConn() : null;
+		} return null;
+	}
+	
+	public static void reBuildConnection(String dbName) {
+		if(c_mp != null){
+			ConnectLink cl = c_mp.get(dbName);
+			if(cl != null) {
+				cl.closeLink();
+				buildConnection(cl,cl.getDriverClassName(),cl.getConnText(),cl.isConnTextContainUserInfo());
+			}
+		}
+	}
+	
 	public static void closeConnection(String dbName){
 		if(c_mp != null){
-			Connection c = c_mp.get(dbName);
-			if(c != null) {
-				try {
-					c.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+			ConnectLink cl = c_mp.get(dbName);
+			if(cl != null) {
+				cl.closeLink();
 				c_mp.remove(dbName);
 			}
 		}

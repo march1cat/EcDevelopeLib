@@ -24,6 +24,8 @@ public class QueneLogger implements Runnable {
 	public static int storageRecordAmount = 2000;
 	private static int writeRecordCnt = 0;
 	
+	private final static String threadName = "EcQueneLogger";
+	
 	public QueneLogger(String logFileUri,String encode){
 		this.logFileUri = logFileUri;
 		if(logFileUri.lastIndexOf("/") >= 0) {
@@ -32,7 +34,9 @@ public class QueneLogger implements Runnable {
 		}
 		this.encode = encode;
 		logQuene = new ConcurrentLinkedQueue<String>(); 
-		(new Thread(this)).start();
+		Thread self = new Thread(this);
+		self.setName(threadName);
+		self.start();
 	}
 	
 	public synchronized void log(String data){

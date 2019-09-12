@@ -5,10 +5,13 @@ public abstract class Runner extends Basis implements Runnable{
 	private boolean isRun = false;
 	protected Thread thread = null;
 	
+	private String threadName = null;
+	
 	
 	public void startRunner(){
 		isRun = true;
 		thread = new Thread(this);
+		if(threadName != null) thread.setName(threadName);
 		thread.start();
 	}
 	
@@ -44,4 +47,16 @@ public abstract class Runner extends Basis implements Runnable{
 	protected void end(){
 		//Wait to be override
 	}
+
+	public String getThreadName() {
+		return threadName;
+	}
+
+	public void setThreadName(String threadName) {
+		this.threadName = threadName;
+	}
+	
+	
+	
+	
 }
