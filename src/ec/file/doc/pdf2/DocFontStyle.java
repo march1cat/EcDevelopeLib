@@ -69,9 +69,6 @@ public class DocFontStyle extends Basis {
 		colorContent = PDFBaseColor(red,green,blue);
 	}
 	
-	
-	
-	
 
 	public Font getFontIndex() {
 		return fontIndex;
@@ -86,8 +83,6 @@ public class DocFontStyle extends Basis {
 	public void setColorIndex(int red,int green,int blue) {
 		this.colorIndex = PDFBaseColor(red,green,blue);
 	}
-
-	
 
 	public boolean isImplemented() {
 		return isImplemented;

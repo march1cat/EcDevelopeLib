@@ -51,6 +51,12 @@ public class StringManager {
 		}
 		return resultArList;
 	}
+	
+	public static boolean isRegexpMatch(String targetStr, String regStr) {
+		Pattern pattern = Pattern.compile(regStr);
+		Matcher match = pattern.matcher(targetStr);
+		return match.find();
+	}
 
 	public static long getSecondAmt(String timeFormat, String nowTimeRegExp) {
 		long secAmt = 0;

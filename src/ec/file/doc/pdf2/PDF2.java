@@ -85,6 +85,22 @@ public class PDF2 extends Basis {
 		} else throw new Exception("Image File doesn't exit,Uri = " + imgUri);
 	}
 	
+	public TableElement addTable(int colAmount) {
+		if(contents == null) contents = new ArrayList<Element>();
+		TableElement t = new TableElement(colAmount);
+		t.setStyle(this.style);
+		contents.add(t.getComponent());
+		return t;
+	}
+	
+	public ListElement addList() {
+		if(contents == null) contents = new ArrayList<Element>();
+		ListElement list = new ListElement();
+		list.setStyle(this.style);
+		contents.add(list.getComponent());
+		return list;
+	}
+	
 	public void setCover(String imgUri) throws Exception {
 		File img = new File(imgUri);
 		if(img.exists()){

@@ -1,6 +1,7 @@
 /***********
-Version 1.6
+Version 1.7
 1.6 ->  Support delay query to fix schema not ready issue
+1.7 ->  Support http content with a link
 ************/
 function EcTableRender(serverView,renderTagID){
     this.serverView = serverView;
@@ -593,7 +594,9 @@ EcTableRender.prototype.renderQueryContent = function(){
                  for(var code in datas[i]){
                     if(this.getTableTitleCodes()[renderCode].toUpperCase() == code.toUpperCase()){
                         var e_td = document.createElement("td");
-                        e_td.innerHTML = datas[i][code];
+                        if(datas[i][code] && datas[i][code].startsWith("http")) {
+                            e_td.innerHTML = "<a href='" + datas[i][code] + "' target='_blank'>" + datas[i][code] + "</a>";
+                        } else e_td.innerHTML = datas[i][code];
                         e_tr.appendChild(e_td);
                         temp++;
                         break;
