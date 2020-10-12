@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import ec.log.ExceptionLogger;
 import ec.log.QueneLogger;
@@ -29,6 +30,8 @@ public abstract class ApplicationMainStart extends Basis{
 		if(DeveloperMode.isON()){
 			System.out.println("Now Run Developer Mode!!,Debug Mode is On!!");
 			RunningPlatform.runningMode = RunningPlatform.RunningMode.DEBUG;
+		} else {
+			System.out.println("Now Run Production Mode, you can run dev mode by passing 'RunDeveloperMode' !!");
 		}
 		
 		if(mainArgs.length > 0) assignStartParameters(mainArgs);
@@ -57,6 +60,17 @@ public abstract class ApplicationMainStart extends Basis{
 	}
 	protected void registerParameterHelp(){
 		//Wait to override
+	}
+	
+	protected void addSystemExistListener(Function<Void , Void> callFunction) {
+		Runtime.getRuntime().addShutdownHook(new Thread()
+		{
+		    @Override
+		    public void run()
+		    {
+		    	callFunction.apply(null);
+		    }
+		});
 	}
 	
 	protected void addParameterHelpDesc(String cmd,String desc){

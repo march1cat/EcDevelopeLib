@@ -32,6 +32,10 @@ public class Response extends Basis{
 		headerMp.put(Header.CACH_CONTROL, "private");
 		headerMp.put(Header.CONTENT_TYPE, "text/html; charset=" + resEnCode);
 		headerMp.put(Header.SERVER, "Microsoft-IIS/10.0");
+		
+		headerMp.put("Access-Control-Allow-Origin", "*");
+		headerMp.put("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+		headerMp.put("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept");
 		if(contBytAr != null) headerMp.put(Header.CONTENT_LENGTH, contBytAr.length);
 	}
 	

@@ -26,6 +26,7 @@ public abstract class SQLCenter extends Basis{
 	private Map<Object,SQLBatch> SQLBatchs = null;
 	protected String dbName = null;
 	protected boolean outSQLText = false;
+	protected boolean hasAutoGenerateKey = false;
 	public SQLCenter(){}
 	
 	
@@ -52,8 +53,11 @@ public abstract class SQLCenter extends Basis{
 			}
 		}
 		String SQL = "insert into " + tableName + " ("+cols+") values ("+para+")";
-		return conn().prepareStatement(SQL);
+		if(hasAutoGenerateKey) return conn().prepareStatement(SQL,PreparedStatement.RETURN_GENERATED_KEYS);
+		else return conn().prepareStatement(SQL);
 	}
+	
+	
 	
 	public PreparedStatement generateSQLBatcher(Object batcherName,String tableName,String[] insertColNameAr) throws SQLException{
 		if(SQLExecuteBatchers == null) SQLExecuteBatchers = new HashMap<>();
@@ -206,7 +210,7 @@ public abstract class SQLCenter extends Basis{
 	}
 	
 	
-	public void insertWithMap(String tableName,Map<Object,Object> data) throws SQLException{
+	public int insertWithMap(String tableName,Map<Object,Object> data) throws SQLException{
 		Object[] keysAr = new Object[data.size()];
 		String[] colsAr = new String[data.size()];
 		Iterator<Object> iter = data.keySet().iterator();
@@ -218,6 +222,7 @@ public abstract class SQLCenter extends Basis{
 			cursor++;
 		}
 		PreparedStatement ptmt =  gereateInsertPreparedStatement(tableName,colsAr);
+		
 		for(int i = 1;i <= colsAr.length;i++){
 			Object value = data.get(keysAr[i - 1]);
 			if(value instanceof Integer) 
@@ -227,8 +232,10 @@ public abstract class SQLCenter extends Basis{
 			else 
 				ptmt.setString(i, value != null ? value.toString() : null);
 		}
-		ptmt.executeUpdate();
+		int value = ptmt.executeUpdate();
+		if(hasAutoGenerateKey) value = getInsertKeyValueInReturnKeyPStmt(ptmt);
 		this.closeDBComm(ptmt, null);
+		return value;
 	}
 	//TODO
 	public boolean batchInsertWithMap(String batchName,String tableName,Map<Object,Object> data){
@@ -534,6 +541,13 @@ public abstract class SQLCenter extends Basis{
 	}
 	
 	
+	
+	
+	public void setHasAutoGenerateKey(boolean hasAutoGenerateKey) {
+		this.hasAutoGenerateKey = hasAutoGenerateKey;
+	}
+
+
 	public abstract void connectionNotBuild();
 	
 }

@@ -17,7 +17,7 @@ public class ClassServiceEngine extends Basis{
 	
 
 	public boolean isClassServiceRequest(String queryUri){
-		String[] ends = {"html","js","css","jpg","gif","png","bootstrap.min.css.map"};
+		String[] ends = {"html","js","css","jpg","gif","png","bootstrap.min.css.map",".map"};
 		for(String end : ends){
 			if(queryUri.endsWith(end)) return false;
 		}

@@ -1,8 +1,11 @@
 package ec.string;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -23,6 +26,14 @@ public class StringManager {
 		resultStr = df.format(sumRate);
 		return resultStr;
 	}
+	
+	public static String formateBigDecimal(BigDecimal sumRate) {
+		String resultStr = null;
+		DecimalFormat df = new DecimalFormat("#.00");
+		resultStr = df.format(sumRate);
+		return resultStr;
+	}
+	
 
 	// 回傳字串的
 	public static List<List<String>> RegSearch(String targetStr, String regStr, boolean isPrintGroupZero) {
@@ -256,8 +267,44 @@ public class StringManager {
 		}
 		return result.toString().toUpperCase();
 	}
+	
+	public static long convertByteArrToLong(byte[] soureArr) {
+		byte[] src = new byte[8];
+		int writeIndex = 0;
+		for(int i = 0;i < src.length - soureArr.length;i++) {
+			src[writeIndex++] = (byte) 0;
+		}
+		
+		for(int i = 0;i < soureArr.length;i++) {
+			src[writeIndex++] = (byte) soureArr[i];
+		}
+		return ByteBuffer.wrap(src).getLong();
+	}
+	
+	public static BigDecimal convertByteArrToDecimal(byte[] soureArr) {
+		byte[] src = new byte[8];
+		int writeIndex = 0;
+		for(int i = 0;i < src.length - soureArr.length;i++) {
+			src[writeIndex++] = (byte) 0;
+		}
+		for(int i = 0;i < soureArr.length;i++) {
+			src[writeIndex++] = (byte) soureArr[i];
+		}
+		double value = ByteBuffer.wrap(src).getDouble();
+		BigDecimal bg = new BigDecimal(value);
+		return bg;
+	}
+	
 
+	public static Timestamp getCurrentTimeStamp() {
+		return new Timestamp(Calendar.getInstance().getTime().getTime());
+	}
 
+	public static String getSystemDate(String format , long timestmp) {
+		DateFormat dateFormat = new SimpleDateFormat(format);
+		Date date = new Date(timestmp);
+		return dateFormat.format(date);
+	}
 	
 
 }
