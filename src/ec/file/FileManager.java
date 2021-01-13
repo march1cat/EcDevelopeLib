@@ -127,7 +127,12 @@ public class FileManager {
 		if(isAppend) Files.write(f.toPath(), bytes, StandardOpenOption.APPEND);
 		else Files.write(f.toPath(), bytes);
 	}
-	
+	//================================================================
+	//Delete File
+	public static void deleteOnExist(String fileURI) {
+		File f = new File(fileURI);
+		if(f.exists()) f.delete();
+	}
 	//==================================================
 	//CopyFile
 	public static void copyDiectory(EcDirector sourceDir,EcDirector saveToDir) throws IOException{

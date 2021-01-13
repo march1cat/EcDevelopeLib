@@ -5,7 +5,7 @@
 			<attribute name="ignore_optional_problems" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/Java SE 8"/>
 	<classpathentry kind="lib" path="lib/excel/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/excel/poi-3.10.1-20140818.jar"/>
 	<classpathentry kind="lib" path="lib/excel/poi-ooxml-3.10.1-20140818.jar"/>

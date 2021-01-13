@@ -37,11 +37,20 @@ public class ResourceTracer extends Runner{
 		long allocatedMemory = runtime.totalMemory();
 		long freeMemory = runtime.freeMemory();
 		
+		output(
+				format.format(maxMemory / 1024) , 
+				format.format(freeMemory / 1024) , 
+				format.format(allocatedMemory / 1024) , 
+				format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024)
+		);
+	}
+	
+	protected void output(String maxMemory , String freeMemory , String allocatedMemory , String totalFreeMemory) {
 		record(
-				"MaxMemery : " + format.format(maxMemory / 1024) + "; " + 
-				"FreeMemery : " + format.format(freeMemory / 1024) + "; " + 
-				"AllocatedMemory : " +  format.format(allocatedMemory / 1024) + "; " + 
-				"Total Free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024));
+				"MaxMemery : " + maxMemory + "; " + 
+				"FreeMemery : " + freeMemory + "; " + 
+				"AllocatedMemory : " +  allocatedMemory + "; " + 
+				"Total Free memory: " + totalFreeMemory);
 	}
 
 	@Override
