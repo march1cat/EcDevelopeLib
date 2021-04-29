@@ -5,7 +5,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -13,11 +12,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
-import ec.net.httpserver.EcHttpServer;
 import ec.net.httpserver.HttpClientRequest;
 import ec.system.Basis;
-import ec.system.DeveloperMode;
-import ec.xpath.XPathManager;
+import ec.parser.XPathManager;
 
 public class EcRenderTable extends Basis implements Cloneable {
 

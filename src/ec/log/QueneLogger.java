@@ -24,7 +24,7 @@ public class QueneLogger implements Runnable {
 	public static int storageRecordAmount = 2000;
 	private static int writeRecordCnt = 0;
 	
-	private final static String threadName = "EcQueneLogger";
+	private String threadName = "EcQueneLogger";
 	
 	public QueneLogger(String logFileUri,String encode){
 		this.logFileUri = logFileUri;
@@ -84,8 +84,12 @@ public class QueneLogger implements Runnable {
 			}
 		}
 	}
-	
-	public static synchronized void initial(String logFileName,String logEncode){
+
+	public void setThreadName(String threadName) {
+		this.threadName = threadName;
+	}
+
+	public static synchronized void initial(String logFileName, String logEncode){
 		initial(logFileName,logEncode,false);
 	}
 	

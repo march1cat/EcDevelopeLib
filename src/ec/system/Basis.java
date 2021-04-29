@@ -192,8 +192,17 @@ public abstract class Basis {
 		if(data.length() > 0)  return data.toUpperCase().endsWith(trimTargetChar.toUpperCase()) ? data.substring(0, data.length() - trimTargetChar.length()) : data;
 		else return data;
 	}
-	
-	protected String[] trimSplit(String data,String splitChar){
+
+
+	public void setLogger(QueneLogger logger) {
+		this.logger = logger;
+	}
+
+	public QueneLogger getLogger() {
+		return logger;
+	}
+
+	protected String[] trimSplit(String data, String splitChar){
 		String[] ar = data.split(splitChar);
 		for(int i = 0 ; i < ar.length; i++){
 			ar[i] = ar[i].trim();

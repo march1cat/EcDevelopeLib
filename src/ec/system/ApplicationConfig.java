@@ -15,6 +15,7 @@ public abstract class ApplicationConfig extends Basis{
 
 	public static String ConfigFile = null;
 	private boolean forceRegenerate = false;
+	private Map<String,String> paramsFromFile = null;
 	
 	
 	public ApplicationConfig(String ConfigFile){
@@ -39,6 +40,7 @@ public abstract class ApplicationConfig extends Basis{
 				boolean isDone = fillOtherConfigParameter(config);
 				if(isDone) isDone = finallyOnIni();
 				if(DeveloperMode.isON() && isDone) showAllConfiguration();
+				paramsFromFile = config;
 				return isDone;
 			} else {
 				log("Config File Not Exist,Auto Generate it!!,File Uri = " + ConfigFile + ".conf",Module.EC_LIB);
@@ -76,6 +78,13 @@ public abstract class ApplicationConfig extends Basis{
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	public void reload() throws Exception {
+		this.log("System is going to reload config settings!! , file = " + ConfigFile);
+		Map<String,String> config = loadConfig();
+		showAllConfiguration();
+		paramsFromFile = config;
 	}
 	
 	private Map<String,String> loadConfig() throws Exception {
@@ -133,8 +142,12 @@ public abstract class ApplicationConfig extends Basis{
 			}
 		}
 	}
-	
-	
+
+
+	public Map<String, String> getParamsFromFile() {
+		return paramsFromFile;
+	}
+
 	@Override
 	public void log(String data) {
 		System.out.println(data);

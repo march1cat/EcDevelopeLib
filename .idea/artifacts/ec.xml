@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="ec">
+    <output-path>/Volumes/64G/BufferArea/Java Jar</output-path>
+    <root id="archive" name="ec.jar">
+      <element id="module-output" name="EdisonLibrary" />
+    </root>
+  </artifact>
+</component>

@@ -15,6 +15,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -304,6 +305,11 @@ public class StringManager {
 		DateFormat dateFormat = new SimpleDateFormat(format);
 		Date date = new Date(timestmp);
 		return dateFormat.format(date);
+	}
+	
+	public static String rndUUID() {
+		UUID uuid = UUID.randomUUID();
+		return uuid.toString();
 	}
 	
 

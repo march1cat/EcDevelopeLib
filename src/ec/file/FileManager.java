@@ -80,6 +80,11 @@ public class FileManager {
 		ret = ret.substring(0, ret.length() - 1);
 		return ret;
 	}
+
+	public static byte[] readFileToBytes(String filename) throws IOException {
+		File file = new File(filename);
+		return  Files.readAllBytes(file.toPath());
+	}
 	//================================================================
 	//Write File
 	
@@ -127,6 +132,7 @@ public class FileManager {
 		if(isAppend) Files.write(f.toPath(), bytes, StandardOpenOption.APPEND);
 		else Files.write(f.toPath(), bytes);
 	}
+
 	//================================================================
 	//Delete File
 	public static void deleteOnExist(String fileURI) {

@@ -20,6 +20,7 @@ public class ImageHandler {
 	private BufferedImage sourceImage = null;
 	private ImageFormat format = null;
 	private String sourceImageUri = null;
+	private String md5 = null;
 	
 	public ImageHandler(String sourceImageUri , ImageFormat format) {
 		this.sourceImageUri = sourceImageUri;
@@ -63,14 +64,16 @@ public class ImageHandler {
 	
 	public String getMD5() throws Exception {
 		mountImage();
-		MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(sourceImage, getFormat(), baos);
-        byte[] bytes = baos.toByteArray();
-        messageDigest.update(bytes);
-        byte[] out_bytes = messageDigest.digest();
-        String hex = StringManager.conver16HexStr(out_bytes);
-        return hex;
+		if(md5 == null) {
+			MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	        ImageIO.write(sourceImage, getFormat(), baos);
+	        byte[] bytes = baos.toByteArray();
+	        messageDigest.update(bytes);
+	        byte[] out_bytes = messageDigest.digest();
+	        md5 = StringManager.conver16HexStr(out_bytes);
+		}
+        return md5;
 	}
 	
 	public boolean equals(ImageHandler target) throws Exception {
